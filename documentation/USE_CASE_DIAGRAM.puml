@@ -1,0 +1,233 @@
+@startuml VLAAS_UseCase
+
+skinparam backgroundColor #FFFFFF
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    FontSize 10
+    FontColor #000000
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    FontColor #000000
+}
+skinparam packageStyle rectangle
+skinparam package {
+    BackgroundColor #F5F5F5
+    BorderColor #000000
+    FontColor #000000
+}
+skinparam ArrowColor #000000
+skinparam NoteBorderColor #000000
+skinparam NoteBackgroundColor #F5F5F5
+skinparam NoteFontColor #000000
+skinparam linetype ortho
+
+top to bottom direction
+
+title **VLAAS/SAKTI - Use Case Diagram**\n**Sistem Administrasi Kontrak Terpadu Instansi**
+
+' ============ ACTORS ============
+actor "Admin\nPLN" as Admin
+actor "Vendor" as Vendor
+actor "Super\nAdmin" as SuperAdmin
+actor "Telegram\nBot" as TelegramBot
+
+' ============ SYSTEM BOUNDARY ============
+rectangle "SAKTI - Sistem Administrasi Kontrak Terpadu Instansi" {
+    
+    ' === MANAJEMEN KONTRAK ===
+    package "Manajemen Kontrak" {
+        usecase "Lihat Daftar Kontrak" as UC1
+        usecase "Tambah Kontrak Baru" as UC2
+        usecase "Edit Data Kontrak" as UC3
+        usecase "Hapus Kontrak" as UC4
+        usecase "Upload Dokumen" as UC5
+        usecase "Lihat Detail Kontrak" as UC6
+        usecase "Buat Amandemen" as UC7
+        usecase "Riwayat Amandemen" as UC8
+        usecase "Update Progress" as UC9
+        usecase "Upload File Progress" as UC10
+        usecase "Filter & Search" as UC11
+        usecase "Status Deadline" as UC12
+    }
+    
+    ' === MANAJEMEN PEMBAYARAN ===
+    package "Pembayaran" {
+        usecase "Tambah Tahapan" as UC13
+        usecase "Tandai Lunas" as UC14
+        usecase "Riwayat Bayar" as UC15
+        usecase "Hapus Tahapan" as UC16
+        usecase "Kelola Termin" as UC17
+    }
+    
+    ' === MANAJEMEN VENDOR ===
+    package "Manajemen Vendor" {
+        usecase "Lihat Vendor" as UC18
+        usecase "Tambah Vendor" as UC19
+        usecase "Edit Vendor" as UC20
+        usecase "Hapus Vendor" as UC21
+        usecase "Generate Code" as UC22
+        usecase "Detail Vendor" as UC23
+        usecase "Auto-Sync Status" as UC24
+        usecase "Nonaktifkan Akun" as UC25
+    }
+    
+    ' === APPROVAL SYSTEM ===
+    package "Approval" {
+        usecase "Lihat Pengajuan" as UC27
+        usecase "Approve Surat" as UC28
+        usecase "Reject Surat" as UC29
+        usecase "Lihat Akun Baru" as UC30
+        usecase "Approve Akun" as UC31
+        usecase "Reject Akun" as UC32
+        usecase "Hapus Pengajuan" as UC33
+    }
+    
+    ' === VENDOR PORTAL ===
+    package "Portal Vendor" {
+        usecase "Login Vendor" as UC35
+        usecase "Aktivasi (Claim)" as UC36
+        usecase "Verifikasi Email" as UC37
+        usecase "Reset Password" as UC38
+        usecase "Reaktivasi Akun" as UC40
+        usecase "Lihat Kontrak" as UC42
+        usecase "Ajukan Surat" as UC43
+        usecase "Upload File" as UC44
+        usecase "Status Pengajuan" as UC45
+        usecase "Update Profil" as UC47
+    }
+    
+    ' === FILE MANAGEMENT ===
+    package "File & Dokumen" {
+        usecase "Upload ke Drive" as UC49
+        usecase "Organisasi Folder" as UC50
+        usecase "Lihat File" as UC51
+        usecase "Hapus File" as UC52
+    }
+    
+    ' === NOTIFIKASI ===
+    package "Notifikasi" {
+        usecase "Kirim Telegram" as UC54
+        usecase "Notif Surat Baru" as UC55
+        usecase "Notif Status" as UC56
+        usecase "Tombol Inline" as UC57
+    }
+    
+    ' === DASHBOARD ===
+    package "Dashboard" {
+        usecase "Dashboard Admin" as UC59
+        usecase "Statistik Kontrak" as UC60
+        usecase "Statistik Vendor" as UC61
+        usecase "Export Laporan" as UC62
+        usecase "Riwayat Aktivitas" as UC63
+        usecase "Alert Deadline" as UC64
+    }
+    
+    ' === PENGATURAN ===
+    package "Pengaturan" {
+        usecase "Kelola Admin" as UC66
+        usecase "Tambah Admin" as UC67
+        usecase "Kelola Role" as UC69
+        usecase "Config Telegram" as UC71
+        usecase "Audit Log" as UC72
+    }
+}
+
+' ============ CONNECTIONS ============
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC6
+Admin --> UC7
+Admin --> UC9
+
+Admin --> UC13
+Admin --> UC14
+Admin --> UC17
+
+Admin --> UC18
+Admin --> UC19
+Admin --> UC22
+Admin --> UC24
+
+Admin --> UC27
+Admin --> UC28
+Admin --> UC29
+Admin --> UC31
+
+Admin --> UC49
+Admin --> UC51
+
+Admin --> UC59
+Admin --> UC60
+Admin --> UC62
+Admin --> UC63
+
+Vendor --> UC35
+Vendor --> UC36
+Vendor --> UC37
+Vendor --> UC38
+Vendor --> UC40
+Vendor --> UC42
+Vendor --> UC43
+Vendor --> UC45
+Vendor --> UC47
+
+SuperAdmin --> UC66
+SuperAdmin --> UC67
+SuperAdmin --> UC69
+SuperAdmin --> UC71
+SuperAdmin --> UC72
+SuperAdmin --|> Admin
+
+TelegramBot --> UC54
+TelegramBot --> UC55
+TelegramBot --> UC56
+TelegramBot --> UC57
+
+' ============ KEY RELATIONSHIPS ============
+UC2 ..> UC5 : <<include>>
+UC2 ..> UC49 : <<include>>
+UC7 ..> UC5 : <<include>>
+UC9 ..> UC10 : <<include>>
+UC43 ..> UC44 : <<include>>
+UC44 ..> UC49 : <<include>>
+UC49 ..> UC50 : <<include>>
+
+UC28 ..> UC54 : <<extend>>
+UC29 ..> UC54 : <<extend>>
+UC31 ..> UC54 : <<extend>>
+
+note right of Admin
+  **Admin PLN:**
+  • Kelola kontrak & amandemen
+  • Tracking progress real-time
+  • Kelola vendor & pembayaran
+  • Approve/reject pengajuan
+  • Upload ke Google Drive
+  • Notifikasi Telegram
+  • Dashboard & laporan
+end note
+
+note left of Vendor
+  **Vendor:**
+  • Aktivasi & verifikasi akun
+  • Login portal vendor
+  • Lihat kontrak terkait
+  • Ajukan surat + upload
+  • Tracking status
+  • Update profil
+end note
+
+note bottom of SuperAdmin
+  **Super Admin:**
+  • Semua akses Admin
+  • Kelola user & role
+  • Config Telegram bot
+  • Audit log sistem
+end note
+
+@enduml

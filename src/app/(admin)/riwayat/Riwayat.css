@@ -1,0 +1,137 @@
+.riwayat-container {
+    padding: 30px;
+}
+
+.riwayat-header {
+    margin-bottom: 30px;
+}
+
+.riwayat-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 10px 0;
+    font-family: var(--font-inter);
+}
+
+.riwayat-subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+    font-family: var(--font-inter);
+}
+
+.timeline-container {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
+    padding: 30px;
+    max-width: 800px;
+}
+
+.timeline-item {
+    display: flex;
+    gap: 20px;
+    padding-bottom: 30px;
+    position: relative;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+    z-index: 0;
+}
+
+.timeline-item:last-child::before {
+    display: none;
+}
+
+.timeline-icon-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    z-index: 1;
+    position: relative;
+    background: #fff;
+    border: 1px solid #f1f5f9;
+}
+
+.timeline-icon-wrapper.contract {
+    background: #eff6ff;
+    color: #3b82f6;
+    border-color: #dbeafe;
+}
+
+.timeline-icon-wrapper.vendor {
+    background: #f0fdf4;
+    color: #22c55e;
+    border-color: #dcfce7;
+}
+
+.timeline-icon-wrapper.amendment {
+    background: #fef3c7;
+    color: #f59e0b;
+    border-color: #fde68a;
+}
+
+.timeline-content {
+    flex: 1;
+    padding-top: 2px;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.timeline-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    font-family: var(--font-inter);
+}
+
+.timeline-time {
+    font-size: 12px;
+    color: #94a3b8;
+    background: #f8fafc;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-family: var(--font-inter);
+}
+
+.timeline-desc {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.5;
+    font-family: var(--font-inter);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+
+.empty-icon {
+    margin-bottom: 16px;
+    opacity: 0.5;
+    color: #cbd5e1;
+}

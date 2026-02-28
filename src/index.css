@@ -1,0 +1,149 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Light Mode (Default) */
+  --bg-body: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  --bg-card: #ffffff;
+  --bg-input: #f8fafc;
+  --bg-header: rgba(255, 255, 255, 0.85);
+  --bg-hover: rgba(248, 250, 252, 0.8);
+
+  --text-primary: #2b3f50;
+  --text-secondary: #5a6d7f;
+  --text-muted: #8b95a1;
+  --text-inverse: #ffffff;
+
+  --border-color: rgba(226, 232, 240, 0.6);
+  --border-strong: #cbd5e1;
+
+  --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --sidebar-gradient: linear-gradient(180deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+
+  /* Font Families */
+  --font-inter: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-outfit: 'Plus Jakarta Sans', sans-serif; /* Override Outfit to use Plus Jakarta */
+}
+
+/* Dark Mode Removed */
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--bg-body);
+  color: var(--text-primary);
+  background-attachment: fixed;
+  overscroll-behavior: none;
+  font-family: var(--font-inter);
+  font-size: clamp(0.875rem, 0.85rem + 0.15vw, 1rem);
+  transition: background 0.3s, color 0.3s;
+  /* Memastikan font scale dengan display scaling */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Ensure HTML matches body bg to prevent white flashes */
+html {
+  background: var(--bg-body);
+  overscroll-behavior: none;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar {
+  display: none;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-inter);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.025em; /* Tighter spacing for modern look */
+  margin-bottom: 0.5em;
+}
+
+h1 {
+  font-size: 2.5em;
+  line-height: 1.2;
+}
+
+input, button, select, textarea {
+  font-family: var(--font-inter);
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s, color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Global Page Transition */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+}
+
+/* ===========================================
+   FIX: Ensure all interactive elements are clickable
+   across all zoom levels (75%-200%)
+   =========================================== */
+
+/* Global fix for button clicks at any zoom level */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+[tabindex] {
+  position: relative;
+  z-index: auto;
+}
+
+/* Ensure decorative elements don't block interactions */
+*::before,
+*::after {
+  pointer-events: none;
+}

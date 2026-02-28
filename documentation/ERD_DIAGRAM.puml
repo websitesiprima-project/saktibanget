@@ -1,0 +1,118 @@
+@startuml VLAAS_ERD
+
+skinparam backgroundColor #FEFEFE
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+title **VLAAS/SAKTI - Entity Relationship Diagram**\n
+
+entity "vendor" as vendor {
+    * **id** : uuid <<PK>>
+    --
+    nama_perusahaan : text
+    email : text
+    no_telepon : text
+    alamat : text
+    jenis_usaha : text
+    npwp : text
+    status : text
+    claim_code : text
+    is_claimed : boolean
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "kontrak" as kontrak {
+    * **id** : uuid <<PK>>
+    --
+    * vendor_id : uuid <<FK>>
+    nomor_kontrak : text
+    nama_kontrak : text
+    nilai_kontrak : numeric
+    tipe_anggaran : text
+    tipe_kontrak : text
+    tanggal_mulai : date
+    tanggal_selesai : date
+    status : text
+    progress : integer
+    lokasi : text
+    file_url : text
+    file_id : text
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "termin" as termin {
+    * **id** : uuid <<PK>>
+    --
+    * kontrak_id : uuid <<FK>>
+    nomor_termin : integer
+    nilai : numeric
+    persentase : numeric
+    status : text
+    tanggal_jatuh_tempo : date
+    tanggal_pembayaran : date
+    bukti_pembayaran : text
+    created_at : timestamp
+}
+
+entity "amandemen" as amandemen {
+    * **id** : uuid <<PK>>
+    --
+    * kontrak_id : uuid <<FK>>
+    nomor_amandemen : text
+    jenis_perubahan : text
+    nilai_sebelum : numeric
+    nilai_sesudah : numeric
+    tanggal_amandemen : date
+    keterangan : text
+    file_url : text
+    created_at : timestamp
+}
+
+entity "surat_pengajuan" as surat {
+    * **id** : uuid <<PK>>
+    --
+    * vendor_id : uuid <<FK>>
+    jenis_surat : text
+    nomor_surat : text
+    perihal : text
+    lampiran : text
+    status : text
+    tanggal_pengajuan : date
+    tanggal_diproses : date
+    catatan_admin : text
+    created_at : timestamp
+}
+
+entity "users" as users {
+    * **id** : uuid <<PK>>
+    --
+    email : text
+    nama : text
+    role : text
+    jabatan : text
+    is_active : boolean
+    created_at : timestamp
+}
+
+entity "activity_log" as activity {
+    * **id** : uuid <<PK>>
+    --
+    * user_id : uuid <<FK>>
+    action_type : text
+    entity_type : text
+    entity_id : uuid
+    description : text
+    metadata : jsonb
+    created_at : timestamp
+}
+
+' Relationships
+vendor ||--o{ kontrak : "memiliki"
+vendor ||--o{ surat : "mengajukan"
+kontrak ||--o{ termin : "terdiri dari"
+kontrak ||--o{ amandemen : "memiliki"
+users ||--o{ activity : "melakukan"
+
+@enduml

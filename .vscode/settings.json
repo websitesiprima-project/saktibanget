@@ -1,0 +1,17 @@
+{
+    "css.lint.universalSelector": "ignore",
+    "css.lint.duplicateProperties": "warning",
+    "css.lint.inlineStyleProperty": "ignore",
+    "stylelint.enable": false,
+    "[css]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "problems.decorations.enabled": false,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "prettier.trailingComma": "es5",
+    "prettier.semi": false,
+    "prettier.singleQuote": true
+}

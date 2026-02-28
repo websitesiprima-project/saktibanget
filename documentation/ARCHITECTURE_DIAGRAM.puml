@@ -1,0 +1,85 @@
+@startuml VLAAS_Architecture
+
+!define RECTANGLE class
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+skinparam defaultFontName Inter
+skinparam shadowing false
+
+' Color definitions
+skinparam component {
+    BackgroundColor<<client>> #E3F2FD
+    BackgroundColor<<server>> #E8F5E9
+    BackgroundColor<<database>> #FFF3E0
+    BackgroundColor<<storage>> #FCE4EC
+    BorderColor #546E7A
+}
+
+title **VLAAS/SAKTI - System Architecture**\n
+
+' === ARCHITECTURE DIAGRAM ===
+package "Frontend" <<client>> {
+    [Browser/Client\n(React + TypeScript)] as Client
+}
+
+package "Backend" <<server>> {
+    [Next.js 15 Server\n(App Router + API Routes)] as NextJS
+}
+
+package "Data Layer" <<database>> {
+    database "Supabase\n(PostgreSQL)" as Supabase {
+        [vendor]
+        [kontrak]
+        [termin]
+        [amandemen]
+        [surat_pengajuan]
+    }
+}
+
+package "File Storage" <<storage>> {
+    cloud "Google Drive" as GDrive {
+        folder "Berkas Kontrak" as Folder {
+            [AI/] 
+            [AO/]
+        }
+    }
+}
+
+' Connections
+Client --> NextJS : HTTP Request\n(SSR + API)
+NextJS --> Supabase : Data & Metadata\n(CRUD Operations)
+NextJS --> GDrive : File Upload/Download\n(PDF Kontrak)
+
+note right of Client
+  **Frontend Stack:**
+  - React 19
+  - TypeScript
+  - CSS Modules
+end note
+
+note right of NextJS
+  **Backend Features:**
+  - Server Actions
+  - API Routes
+  - SSR/SSG
+end note
+
+note bottom of Supabase
+  **Database Tables:**
+  - vendor
+  - kontrak
+  - termin
+  - amandemen
+  - surat_pengajuan
+end note
+
+note bottom of GDrive
+  **Folder Structure:**
+  Berkas Kontrak/
+  ├── AI/
+  │   └── [Nama Kontrak]/
+  └── AO/
+      └── [Nama Kontrak]/
+end note
+
+@enduml

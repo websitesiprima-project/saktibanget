@@ -1,0 +1,59 @@
+src/app/(admin)/aset/page.tsx(745,40): error TS2339: Property 'data' does not exist on type '{ success: true; data: any; message: string; } | { success: boolean; message: string; }'.
+  Property 'data' does not exist on type '{ success: boolean; message: string; }'.
+src/app/(admin)/aset/page.tsx(745,60): error TS2339: Property 'data' does not exist on type '{ success: true; data: any; message: string; } | { success: boolean; message: string; }'.
+  Property 'data' does not exist on type '{ success: boolean; message: string; }'.
+src/app/(admin)/aset/page.tsx(835,40): error TS2339: Property 'data' does not exist on type '{ success: true; data: any; message: string; } | { success: boolean; message: string; }'.
+  Property 'data' does not exist on type '{ success: boolean; message: string; }'.
+src/app/(admin)/aset/page.tsx(835,60): error TS2339: Property 'data' does not exist on type '{ success: true; data: any; message: string; } | { success: boolean; message: string; }'.
+  Property 'data' does not exist on type '{ success: boolean; message: string; }'.
+src/app/(admin)/aset/page.tsx(840,73): error TS2339: Property 'message' does not exist on type '{ success: false; error: string; } | { success: true; data: any; message: string; } | { success: boolean; message: string; }'.
+  Property 'message' does not exist on type '{ success: false; error: string; }'.
+src/app/(admin)/pengaturan/page.tsx(172,61): error TS2339: Property 'error' does not exist on type 'SupabaseResponse<any>'.
+  Property 'error' does not exist on type '{ success: true; data: any; message: string; }'.
+src/app/(admin)/pengaturan/page.tsx(195,30): error TS2339: Property 'message' does not exist on type '{ success: true; data: any; message: string; } | { success: boolean; error: string; }'.
+  Property 'message' does not exist on type '{ success: boolean; error: string; }'.
+src/app/(admin)/pengaturan/page.tsx(199,60): error TS2339: Property 'error' does not exist on type '{ success: true; data: any; message: string; } | { success: boolean; error: string; }'.
+  Property 'error' does not exist on type '{ success: true; data: any; message: string; }'.
+src/app/(admin)/pengaturan/page.tsx(219,63): error TS2339: Property 'error' does not exist on type 'SupabaseResponse<any>'.
+  Property 'error' does not exist on type '{ success: true; data: any; message: string; }'.
+src/app/(admin)/pengaturan/page.tsx(240,56): error TS2339: Property 'error' does not exist on type 'SupabaseResponse<any>'.
+  Property 'error' does not exist on type '{ success: true; data: any; message: string; }'.
+src/app/(admin)/pengaturan/page.tsx(261,61): error TS2339: Property 'error' does not exist on type 'SupabaseResponse<any>'.
+  Property 'error' does not exist on type '{ success: true; data: any; message: string; }'.
+src/app/(admin)/pengaturan/page.tsx(279,60): error TS2339: Property 'error' does not exist on type 'SupabaseResponse<any>'.
+  Property 'error' does not exist on type '{ success: true; data: any; message: string; }'.
+src/app/(admin)/pengaturan/page.tsx(295,64): error TS2339: Property 'error' does not exist on type 'SupabaseResponse<any>'.
+  Property 'error' does not exist on type '{ success: true; data: any; message: string; }'.
+src/app/vendor-portal/page.tsx(145,37): error TS2322: Type 'string' is not assignable to type 'number'.
+src/hooks/useOptimizedFetch.ts(29,25): error TS2554: Expected 1 arguments, but got 0.
+tests/aset/ManajemenAset.integration.test.tsx(172,26): error TS2339: Property 'paid_at' does not exist on type '{ contract_id: string; name: string; percentage: string; value: string; due_date: string; status: string; }'.
+tests/aset/ManajemenAset.integration.test.tsx(175,33): error TS2339: Property 'paid_at' does not exist on type '{ contract_id: string; name: string; percentage: string; value: string; due_date: string; status: string; }'.
+tests/aset/ManajemenAset.test.tsx(98,17): error TS2367: This comparison appears to be unintentional because the types '"Selesai"' and '"all"' have no overlap.
+tests/aset/ManajemenAset.test.tsx(112,37): error TS2367: This comparison appears to be unintentional because the types '"Dalam Pekerjaan"' and '"all"' have no overlap.
+tests/aset/ManajemenAset.test.tsx(663,17): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type '{ name: string; amount: string; }'.
+tests/dashboard/Dashboard.test.tsx(112,50): error TS2367: This comparison appears to be unintentional because the types '"dalam proses"' and '"selesai"' have no overlap.
+tests/dashboard/Dashboard.test.tsx(112,74): error TS2367: This comparison appears to be unintentional because the types '"dalam proses"' and '"terbayar"' have no overlap.
+tests/laporan/Laporan.test.tsx(432,21): error TS2367: This comparison appears to be unintentional because the types '500000000' and '0' have no overlap.
+tests/setup.ts(24,1): error TS2322: Type 'typeof IntersectionObserver' is not assignable to type '{ new (callback: IntersectionObserverCallback, options?: IntersectionObserverInit): IntersectionObserver; prototype: IntersectionObserver; }'.
+  Types of property 'prototype' are incompatible.
+    Type 'IntersectionObserver' is missing the following properties from type 'IntersectionObserver': root, rootMargin, thresholds
+tests/vendor/DataVendor.integration.test.tsx(175,29): error TS2339: Property 'nama' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(178,22): error TS2339: Property 'nama' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(179,22): error TS2339: Property 'alamat' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(181,29): error TS2339: Property 'nama' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(185,30): error TS2339: Property 'id' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(186,32): error TS2339: Property 'nama' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(187,34): error TS2339: Property 'alamat' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(188,35): error TS2339: Property 'telepon' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(189,33): error TS2339: Property 'email' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(190,41): error TS2339: Property 'kontakPerson' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(191,34): error TS2339: Property 'status' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(192,46): error TS2339: Property 'tanggalRegistrasi' does not exist on type '{}'.
+tests/vendor/DataVendor.integration.test.tsx(482,57): error TS2339: Property 'nama' does not exist on type '{ id: string; name: string; alamat: string; phone: string; email: string; kontak_person: string; status: string; tanggal_registrasi: string; }'.
+tests/vendor/DataVendor.integration.test.tsx(484,39): error TS2339: Property 'telepon' does not exist on type '{ id: string; name: string; alamat: string; phone: string; email: string; kontak_person: string; status: string; tanggal_registrasi: string; }'.
+tests/vendor/DataVendor.test.tsx(383,26): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type '{ nama: string; }'.
+tests/vendor/DataVendor.test.tsx(487,57): error TS2339: Property 'nama' does not exist on type '{ id: string; name: string; alamat: string; phone: string; email: string; kontak_person: string; status: string; tanggal_registrasi: string; }'.
+tests/vendor/DataVendor.test.tsx(488,61): error TS2339: Property 'address' does not exist on type '{ id: string; name: string; alamat: string; phone: string; email: string; kontak_person: string; status: string; tanggal_registrasi: string; }'.
+tests/vendor/DataVendor.test.tsx(489,39): error TS2339: Property 'telepon' does not exist on type '{ id: string; name: string; alamat: string; phone: string; email: string; kontak_person: string; status: string; tanggal_registrasi: string; }'.
+tests/vendor/DataVendor.test.tsx(491,74): error TS2551: Property 'contact_person' does not exist on type '{ id: string; name: string; alamat: string; phone: string; email: string; kontak_person: string; status: string; tanggal_registrasi: string; }'. Did you mean 'kontak_person'?
+tests/vendor/DataVendor.test.tsx(493,84): error TS2339: Property 'registration_date' does not exist on type '{ id: string; name: string; alamat: string; phone: string; email: string; kontak_person: string; status: string; tanggal_registrasi: string; }'.

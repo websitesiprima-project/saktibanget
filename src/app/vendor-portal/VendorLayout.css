@@ -1,0 +1,42 @@
+/* Vendor Layout - Admin Style */
+.vendor-layout {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #b5dced 0%, #d4e7f5 50%, #e8e3f5 100%);
+  background-attachment: fixed;
+  position: relative;
+}
+
+.vendor-layout::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 15% 20%, rgba(181, 220, 237, 0.3), transparent 35%),
+    radial-gradient(circle at 85% 75%, rgba(232, 227, 245, 0.25), transparent 35%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.vendor-main-content {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+.vendor-content-area {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .vendor-main-content {
+    margin-left: 0;
+  }
+}

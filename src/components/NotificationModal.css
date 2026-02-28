@@ -1,0 +1,184 @@
+/* Notification Modal Overlay */
+.notification-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Notification Modal Content */
+.notification-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px 24px 24px 24px;
+    max-width: 380px;
+    width: calc(100% - 32px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    text-align: center;
+    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Icon Container */
+.notification-modal-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.notification-modal-icon.success {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.notification-modal-icon.error {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.notification-modal-icon.warning {
+    background: #fef3c7;
+    color: #f59e0b;
+}
+
+.notification-modal-icon.info {
+    background: #dbeafe;
+    color: #3b82f6;
+}
+
+/* Title */
+.notification-modal-title {
+    font-family: var(--font-outfit), sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.5px;
+}
+
+/* Message */
+.notification-modal-message {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+}
+
+/* Button */
+.notification-modal-btn {
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-inter), sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.notification-modal-btn.success {
+    background: #059669;
+}
+
+.notification-modal-btn.success:hover {
+    background: #047857;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px -2px rgba(5, 150, 105, 0.3);
+}
+
+.notification-modal-btn.error {
+    background: #dc2626;
+}
+
+.notification-modal-btn.error:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px -2px rgba(220, 38, 38, 0.3);
+}
+
+.notification-modal-btn.warning {
+    background: #f59e0b;
+}
+
+.notification-modal-btn.warning:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px -2px rgba(245, 158, 11, 0.3);
+}
+
+.notification-modal-btn.info {
+    background: #3b82f6;
+}
+
+.notification-modal-btn.info:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px -2px rgba(59, 130, 246, 0.3);
+}
+
+.notification-modal-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .notification-modal-content {
+        padding: 24px 20px 20px 20px;
+    }
+
+    .notification-modal-icon {
+        width: 64px;
+        height: 64px;
+    }
+
+    .notification-modal-icon.success svg,
+    .notification-modal-icon.error svg,
+    .notification-modal-icon.warning svg,
+    .notification-modal-icon.info svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    .notification-modal-title {
+        font-size: 20px;
+    }
+
+    .notification-modal-message {
+        font-size: 14px;
+    }
+}
