@@ -56,7 +56,29 @@ export async function POST(req: NextRequest) {
             const text = update.message.text;
             const chatId = update.message.chat.id;
 
-            if (text === '/stats') {
+            if (text === '/start' || text === '/help') {
+                const helpText = `
+🤖 <b>SAKTI PLN Bot Information</b>
+
+Halo! Saya adalah bot resmi sistem SAKTI PLN.
+
+📋 <b>Daftar Perintah:</b>
+
+/stats — Statistik ringkasan sistem
+   (Total Vendor, Total Kontrak, Kontrak Aktif)
+
+/active — Daftar semua kontrak yang aktif
+
+/deadline — Kontrak yang mendekati deadline
+   (dalam 30 hari ke depan)
+
+/help — Tampilkan pesan bantuan ini
+
+Selain itu, saya juga akan mengirimkan notifikasi otomatis untuk pengajuan surat yang memerlukan persetujuan.
+`.trim();
+                await sendTelegramReply(chatId, helpText);
+
+            } else if (text === '/stats') {
                 const vendorData = await getDashboardVendorData() as any;
                 const contracts = await contractService.getAllContracts() as any;
 
