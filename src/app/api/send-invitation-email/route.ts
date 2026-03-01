@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import crypto from 'crypto'
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request: NextRequest) {
     try {
         const { email, companyName, activationToken, invitedBy } = await request.json()

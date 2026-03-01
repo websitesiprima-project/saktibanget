@@ -43,3 +43,6 @@ src/services/server/service-account.json
 src/services/server/*.apps.googleusercontent.com.json
 credentials.json
 token.json
+
+# Plain env file (contains secrets - NEVER commit!)
+env

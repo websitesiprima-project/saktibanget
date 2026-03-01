@@ -4,6 +4,9 @@ import path from 'path';
 import { NextResponse } from 'next/server';
 import { Readable } from 'stream';
 
+export const dynamic = 'force-dynamic';
+
+
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 

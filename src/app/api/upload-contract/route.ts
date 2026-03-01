@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { uploadContractPDF } from '@/services/googleDriveService';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 
 // Konfigurasi untuk mengizinkan upload file besar
 export const config = {
