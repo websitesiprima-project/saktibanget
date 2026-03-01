@@ -9,8 +9,8 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
 
 // Create Supabase client with SERVICE ROLE KEY (Bypasses RLS)
 export const supabaseAdmin = createClient(
-    supabaseUrl,
-    supabaseServiceRoleKey,
+    supabaseUrl || 'https://placeholder.supabase.co',
+    supabaseServiceRoleKey || 'placeholder-service-key',
     {
         auth: {
             autoRefreshToken: false,

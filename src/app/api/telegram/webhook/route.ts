@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendTelegramReply, answerCallbackQuery, editMessageText } from '@/actions/telegramActions';
+import { sendTelegramReply, answerCallbackQuery, editMessageText } from '@/lib/telegramUtils';
 import { getDashboardVendorData } from '@/services/vendorService';
 import { contractService } from '@/services/contractService';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
