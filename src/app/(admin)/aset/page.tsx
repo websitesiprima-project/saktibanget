@@ -20,6 +20,8 @@ function ManajemenAset() {
     const searchParams = useSearchParams()
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 20;
     const [showModal, setShowModal] = useState(false);
     const [showColumnSelector, setShowColumnSelector] = useState(false);
     const columnSelectorRef = useRef(null);
@@ -70,6 +72,12 @@ function ManajemenAset() {
         const matchesStatus = filterStatus === 'all' || asset.status === filterStatus
         return matchesSearch && matchesStatus
     })
+
+    const totalPages = Math.ceil(filteredAssets.length / ITEMS_PER_PAGE)
+    const paginatedAssets = filteredAssets.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    )
 
     // Buka modal upload
     function openUploadModal(contractId) {
@@ -1319,7 +1327,7 @@ function ManajemenAset() {
                     <div className="filter-section" style={{ flex: '1 1 500px' }}>
                         <select
                             value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
+                            onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
                             className="filter-select"
                             title="Pilih status kontrak"
                             style={{ display: 'block', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', minWidth: '160px' }}
@@ -1336,7 +1344,7 @@ function ManajemenAset() {
                                 type="text"
                                 placeholder="Cari Kontrak..."
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                                 className="search-input-table"
                                 style={{ paddingLeft: '44px', width: '100%' }}
                             />
@@ -1543,7 +1551,7 @@ function ManajemenAset() {
                             </thead>
                             <tbody>
                                 {filteredAssets.length > 0 ? (
-                                    filteredAssets.map((asset) => {
+                                    paginatedAssets.map((asset) => {
                                         const deadlineStatus = getDeadlineStatus(asset.endDate, asset.status)
                                         const progressInfo = getProgressUpdateStatus(asset.history || [], asset.status)
                                         const rowStyle = {
@@ -2043,29 +2051,43 @@ function ManajemenAset() {
                     filteredAssets.length > 0 && (
                         <div className="table-pagination">
                             <span className="pagination-info">
-                                Menampilkan 1-{filteredAssets.length} dari {filteredAssets.length} data
+                                Menampilkan {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredAssets.length)}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredAssets.length)} dari {filteredAssets.length} data
                             </span>
                             <div className="pagination-controls">
                                 <button
-                                    className={`pagination-btn${filteredAssets.length <= 10 ? ' disabled-btn' : ''}`}
-                                    disabled={filteredAssets.length <= 10}
-                                    style={{ cursor: filteredAssets.length <= 10 ? 'not-allowed' : 'pointer', opacity: filteredAssets.length <= 10 ? 0.5 : 1, position: 'relative', textAlign: 'center', justifyContent: 'center', alignItems: 'center', display: 'flex' }}
+                                    className={`pagination-btn${currentPage === 1 ? ' disabled-btn' : ''}`}
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
                                     ‹ Sebelumnya
                                 </button>
-                                {filteredAssets.length > 10 ? (
-                                    <>
-                                        <button className="pagination-btn active">1</button>
-                                        <button className="pagination-btn">2</button>
-                                        <button className="pagination-btn">3</button>
-                                    </>
-                                ) : (
-                                    <button className="pagination-btn active">1</button>
-                                )}
+                                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                    .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                                    .reduce<(number | string)[]>((acc, page, idx, arr) => {
+                                        if (idx > 0 && (page as number) - (arr[idx - 1] as number) > 1) acc.push('...');
+                                        acc.push(page);
+                                        return acc;
+                                    }, [])
+                                    .map((page, idx) =>
+                                        page === '...' ? (
+                                            <span key={`ellipsis-${idx}`} className="pagination-btn" style={{ cursor: 'default' }}>…</span>
+                                        ) : (
+                                            <button
+                                                key={page}
+                                                className={`pagination-btn${currentPage === page ? ' active' : ''}`}
+                                                onClick={() => setCurrentPage(page as number)}
+                                            >
+                                                {page}
+                                            </button>
+                                        )
+                                    )
+                                }
                                 <button
-                                    className={`pagination-btn${filteredAssets.length <= 10 ? ' disabled-btn' : ''}`}
-                                    disabled={filteredAssets.length <= 10}
-                                    style={{ cursor: filteredAssets.length <= 10 ? 'not-allowed' : 'pointer', opacity: filteredAssets.length <= 10 ? 0.5 : 1, position: 'relative', textAlign: 'center', justifyContent: 'center', alignItems: 'center', display: 'flex' }}
+                                    className={`pagination-btn${currentPage === totalPages ? ' disabled-btn' : ''}`}
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
                                     Selanjutnya ›
                                 </button>
