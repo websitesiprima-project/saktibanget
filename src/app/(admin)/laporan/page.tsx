@@ -439,19 +439,23 @@ function Laporan() {
         return ((value / totalBudget) * 100);
     };
 
-    // Calculate segments for Pie Chart - hanya 3 status
+    // Calculate segments for Pie Chart - semua status
     const segments = [
-        { label: 'Dalam Pekerjaan', value: budgetData.dalamProses, color: '#f59e0b' }, // Orange
-        { label: 'Telah Diperiksa', value: budgetData.telahDiperiksa, color: '#8b5cf6' }, // Purple
-        { label: 'Terbayar', value: budgetData.terbayar, color: '#10b981' } // Hijau
-    ];
+        { label: 'Dalam Pekerjaan', value: budgetData.dalamProses, color: '#f59e0b' },       // Orange
+        { label: 'Terkontrak', value: budgetData.terkontrak, color: '#3b82f6' },              // Blue
+        { label: 'Dalam Pemeriksaan', value: budgetData.dalamPemeriksaan, color: '#f97316' },  // Deep Orange
+        { label: 'Telah Diperiksa', value: budgetData.telahDiperiksa, color: '#8b5cf6' },     // Purple
+        { label: 'Terbayar', value: budgetData.terbayar, color: '#10b981' },                  // Green
+        { label: 'Selesai', value: budgetData.selesai, color: '#06b6d4' }                     // Cyan
+    ].filter(seg => seg.value > 0); // Sembunyikan status dengan nilai 0
 
-    let currentOffset = 0;
+    const circumference = 251.2; // 2 * Math.PI * 40
+    let cumulativePercent = 0;
     const pieSegments = segments.map(seg => {
         const percent = getPercent(seg.value);
-        const strokeLength = (percent / 100) * 251.2; // 251.2 is circumference
-        const offset = currentOffset;
-        currentOffset -= strokeLength; // SVG stroke-dashoffset is counter-clockwise/negative usually
+        const strokeLength = (percent / 100) * circumference;
+        const offset = -cumulativePercent * circumference / 100;
+        cumulativePercent += percent;
         return { ...seg, percent, strokeLength, offset };
     });
 
