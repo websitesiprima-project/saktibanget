@@ -1,14 +1,16 @@
 'use client'
-import React, { FC, useState, useEffect, MouseEvent } from 'react'
+import React, { FC, useState, useEffect, useCallback, MouseEvent } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { Bell, User, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
 import styled from 'styled-components'
+import { supabase } from '@/lib/supabaseClient'
 
 interface Notification {
-  id: number
+  id: string
   message: string
   time: string
   unread: boolean
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
 }
 
 const VendorHeaderContainer = styled.header`
@@ -443,6 +445,21 @@ const LogoGroup = styled.div`
   }
 `;
 
+const formatTimeAgo = (dateString: string): string => {
+  const now = new Date()
+  const date = new Date(dateString)
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Baru saja'
+  if (diffMins < 60) return `${diffMins} menit lalu`
+  if (diffHours < 24) return `${diffHours} jam lalu`
+  if (diffDays < 30) return `${diffDays} hari lalu`
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 const VendorHeader: FC = () => {
   const router = useRouter()
   const pathname = usePathname()
@@ -451,6 +468,55 @@ const VendorHeader: FC = () => {
   const [userName, setUserName] = useState<string>('Vendor')
   const [userInitial, setUserInitial] = useState<string>('V')
   const [profileImage, setProfileImage] = useState<string>('')
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [unreadCount, setUnreadCount] = useState<number>(0)
+
+  const fetchNotifications = useCallback(async () => {
+    const vendorUserId = localStorage.getItem('vendorUserId')
+    if (!vendorUserId) return
+
+    const lastReadAt = localStorage.getItem('notificationsLastRead')
+    const lastRead = lastReadAt ? new Date(lastReadAt) : new Date(0)
+
+    const { data, error } = await supabase
+      .from('surat_pengajuan')
+      .select('id, nomor_surat, status, updated_at, created_at')
+      .eq('vendor_id', parseInt(vendorUserId))
+      .order('updated_at', { ascending: false })
+      .limit(15)
+
+    if (error || !data) return
+
+    const notifList: Notification[] = data.map(surat => {
+      const msgMap: Record<string, string> = {
+        APPROVED: `Surat ${surat.nomor_surat} telah disetujui`,
+        REJECTED: `Surat ${surat.nomor_surat} ditolak. Cek alasan penolakan.`,
+        PENDING:  `Pengajuan ${surat.nomor_surat} sedang diproses`,
+      }
+      const updatedDate = new Date(surat.updated_at)
+      const isUnread =
+        updatedDate > lastRead &&
+        (surat.status === 'APPROVED' || surat.status === 'REJECTED')
+
+      return {
+        id: surat.id as string,
+        message: msgMap[surat.status] ?? `Surat ${surat.nomor_surat} diperbarui`,
+        time: formatTimeAgo(surat.updated_at),
+        unread: isUnread,
+        status: surat.status as 'PENDING' | 'APPROVED' | 'REJECTED',
+      }
+    })
+
+    setNotifications(notifList)
+    setUnreadCount(notifList.filter(n => n.unread).length)
+  }, [])
+
+  // Initial load + auto-refresh every 60 seconds
+  useEffect(() => {
+    fetchNotifications()
+    const interval = setInterval(fetchNotifications, 60000)
+    return () => clearInterval(interval)
+  }, [fetchNotifications])
 
   useEffect(() => {
     const savedProfile = localStorage.getItem('vendorProfile')
@@ -521,14 +587,6 @@ const VendorHeader: FC = () => {
     }
   }
 
-  const notifications: Notification[] = [
-    { id: 1, message: 'Surat SRT/VND/2025/001 telah disetujui', time: '2 jam lalu', unread: true },
-    { id: 2, message: 'Surat SRT/VND/2025/003 ditolak. Cek alasan penolakan.', time: '1 hari lalu', unread: true },
-    { id: 3, message: 'Pengajuan SRT/VND/2025/002 sedang diproses', time: '2 hari lalu', unread: false },
-  ]
-
-  const unreadCount = notifications.filter(n => n.unread).length
-
   const handleLogout = (): void => {
     localStorage.removeItem('vendorLoggedIn')
     localStorage.removeItem('vendorEmail')
@@ -545,6 +603,12 @@ const VendorHeader: FC = () => {
   }
 
   const toggleNotifications = (): void => {
+    if (!showNotifications) {
+      // Mark all as read when opening the dropdown
+      localStorage.setItem('notificationsLastRead', new Date().toISOString())
+      setNotifications(prev => prev.map(n => ({ ...n, unread: false })))
+      setUnreadCount(0)
+    }
     setShowNotifications(!showNotifications)
   }
 
@@ -580,12 +644,18 @@ const VendorHeader: FC = () => {
                   <span className="notification-count">{unreadCount} baru</span>
                 </div>
                 <div className="notification-list">
-                  {notifications.map(notif => (
-                    <div key={notif.id} className={`notification-item ${notif.unread ? 'unread' : ''}`}>
-                      <p>{notif.message}</p>
-                      <span className="notification-time">{notif.time}</span>
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '24px 20px', textAlign: 'center', color: '#94a3b8', fontSize: '14px', fontFamily: 'Inter, sans-serif' }}>
+                      Belum ada notifikasi
                     </div>
-                  ))}
+                  ) : (
+                    notifications.map(notif => (
+                      <div key={notif.id} className={`notification-item ${notif.unread ? 'unread' : ''}`}>
+                        <p>{notif.message}</p>
+                        <span className="notification-time">{notif.time}</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}
