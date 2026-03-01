@@ -18,9 +18,9 @@ interface VendorAccount {
     pic_email: string
     pic_position: string
     address: string
-    bank_name: string
-    account_number: string
-    account_name: string
+    bank_pembayaran: string
+    no_rekening: string
+    nama_rekening: string
     certificate_url: string
     certificate_type: string
     status: string
@@ -196,9 +196,9 @@ function ApprovalAkun() {
                             created_at: new Date().toISOString(),
                             updated_at: new Date().toISOString(),
                             // Additional fields from self-registration
-                            bank_pembayaran: account.bank_name || '',
-                            no_rekening: account.account_number || '',
-                            nama_rekening: account.account_name || ''
+                            bank_pembayaran: account.bank_pembayaran || '',
+                            no_rekening: account.no_rekening || '',
+                            nama_rekening: account.nama_rekening || ''
                         }])
 
                     if (vendorInsertError) {
@@ -502,15 +502,15 @@ function ApprovalAkun() {
                             </div>
                             <div className="detail-row">
                                 <span className="detail-label">Bank</span>
-                                <span className="detail-value">{selectedAccount.bank_name || '-'}</span>
+                                <span className="detail-value">{selectedAccount.bank_pembayaran || '-'}</span>
                             </div>
                             <div className="detail-row">
                                 <span className="detail-label">No. Rekening</span>
-                                <span className="detail-value">{selectedAccount.account_number || '-'}</span>
+                                <span className="detail-value">{selectedAccount.no_rekening || '-'}</span>
                             </div>
                             <div className="detail-row">
                                 <span className="detail-label">Nama Rekening</span>
-                                <span className="detail-value">{selectedAccount.account_name || '-'}</span>
+                                <span className="detail-value">{selectedAccount.nama_rekening || '-'}</span>
                             </div>
 
                             <div className="detail-section-title">

@@ -159,9 +159,9 @@ function DataVendor() {
                     status: vendor.status || 'Aktif',
                     tanggalRegistrasi: vendor.created_at || vendor.tanggal_registrasi || '',
                     kategori: vendor.kategori || '',
-                    bankPembayaran: vendor.bank_name || '',
-                    noRekening: vendor.account_number || '',
-                    namaRekening: vendor.account_name || '',
+                    bankPembayaran: vendor.bank_pembayaran || '',
+                    noRekening: vendor.no_rekening || '',
+                    namaRekening: vendor.nama_rekening || ''
                     // Claim code fields
                     claimCode: vendor.claim_code || null,
                     isClaimed: vendor.is_claimed || false,
@@ -263,9 +263,9 @@ function DataVendor() {
                         nama_pimpinan: formData.namaPimpinan || null,
                         jabatan: formData.jabatan || null,
                         npwp: formData.npwp || null,
-                        bank_name: formData.bankPembayaran || null,
-                        account_number: formData.noRekening || null,
-                        account_name: formData.namaRekening || null,
+                        bank_pembayaran: formData.bankPembayaran || null,
+                        no_rekening: formData.noRekening || null,
+                        nama_rekening: formData.namaRekening || null,
                         status: formData.status,
                         updated_at: new Date().toISOString()
                     }
@@ -333,9 +333,9 @@ function DataVendor() {
                                     pic_phone: formData.telepon || null,
                                     pic_email: formData.email || null,
                                     address: formData.alamat || null,
-                                    bank_name: formData.bankPembayaran || null,
-                                    account_number: formData.noRekening || null,
-                                    account_name: formData.namaRekening || null
+                                    bank_pembayaran: formData.bankPembayaran || null,
+                                    no_rekening: formData.noRekening || null,
+                                    nama_rekening: formData.namaRekening || null
                                 })
                                 .eq('id', vendorUser.id)
 
@@ -430,8 +430,11 @@ function DataVendor() {
                         telepon: formData.telepon || null,
                         email: formData.email || null, // Email opsional
                         nama_pimpinan: formData.namaPimpinan || null,
-                        // jabatan: formData.jabatan || null, // TODO: Uncomment setelah migration dijalankan
+                        jabatan: formData.jabatan || null,
                         npwp: formData.npwp || null,
+                        bank_pembayaran: formData.bankPembayaran || null,
+                        no_rekening: formData.noRekening || null,
+                        nama_rekening: formData.namaRekening || null,
                         status: 'Aktif',
                         claim_code: claimCode,
                         is_claimed: false,
@@ -847,9 +850,9 @@ function DataVendor() {
                     // Merge data vendor dengan data vendor_users
                     setDetailVendor({
                         ...vendor,
-                        bankPembayaran: vendorUser.bank_name || vendor.bankPembayaran || '',
-                        noRekening: vendorUser.account_number || vendor.noRekening || '',
-                        namaRekening: vendorUser.account_name || vendor.namaRekening || '',
+                        bankPembayaran: vendorUser.bank_pembayaran || vendor.bankPembayaran || '',
+                        noRekening: vendorUser.no_rekening || vendor.noRekening || '',
+                        namaRekening: vendorUser.nama_rekening || vendor.namaRekening || '',
                         jabatan: vendorUser.pic_position || vendor.jabatan || '',
                         namaPimpinan: vendorUser.pic_name || vendor.namaPimpinan || '',
                         telepon: vendorUser.pic_phone || vendor.telepon || '',
