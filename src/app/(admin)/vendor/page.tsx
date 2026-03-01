@@ -159,6 +159,9 @@ function DataVendor() {
                     status: vendor.status || 'Aktif',
                     tanggalRegistrasi: vendor.created_at || vendor.tanggal_registrasi || '',
                     kategori: vendor.kategori || '',
+                    bankPembayaran: vendor.bank_name || '',
+                    noRekening: vendor.account_number || '',
+                    namaRekening: vendor.account_name || '',
                     // Claim code fields
                     claimCode: vendor.claim_code || null,
                     isClaimed: vendor.is_claimed || false,
@@ -258,8 +261,11 @@ function DataVendor() {
                         telepon: formData.telepon || null,
                         email: formData.email || null,
                         nama_pimpinan: formData.namaPimpinan || null,
-                        // jabatan: formData.jabatan || null, // TODO: Uncomment setelah migration dijalankan
+                        jabatan: formData.jabatan || null,
                         npwp: formData.npwp || null,
+                        bank_name: formData.bankPembayaran || null,
+                        account_number: formData.noRekening || null,
+                        account_name: formData.namaRekening || null,
                         status: formData.status,
                         updated_at: new Date().toISOString()
                     }
