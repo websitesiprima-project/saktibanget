@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabaseClient'
 import { updateVendorContractStatus } from '../../../services/vendorAccountService'
 import NotificationModal from '../../../components/NotificationModal'
 import ConfirmModal from '../../../components/ConfirmModal'
+import { useFormGuard } from '@/hooks/useFormGuard'
 import VendorCsvImportModal from '../../../components/VendorCsvImportModal'
 import './DataVendor.css'
 
@@ -238,9 +239,11 @@ function DataVendor() {
     // State for detail modal
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailVendor, setDetailVendor] = useState(null);
+    const vendorGuard = useFormGuard(300)
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault()
+        vendorGuard.run(async () => {
         setLoading(true)
 
         try {
@@ -567,6 +570,7 @@ function DataVendor() {
         } finally {
             setLoading(false)
         }
+        }) // end vendorGuard.run
     }
 
     // Copy claim code to clipboard
@@ -1462,7 +1466,7 @@ pic_name: vendor.namaPimpinan || null,
                                 <button
                                     type="submit"
                                     className="btn-submit-vendor"
-                                    disabled={loading}
+                                    disabled={loading || vendorGuard.isSubmitting}
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',

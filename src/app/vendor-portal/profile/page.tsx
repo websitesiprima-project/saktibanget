@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabaseClient'
 import { deactivateVendorAccount } from '../../../services/vendorAccountService'
 import NotificationModal from '../../../components/NotificationModal'
 import ConfirmModal from '../../../components/ConfirmModal'
+import { useFormGuard } from '@/hooks/useFormGuard'
 import './VendorProfile.css'
 
 function VendorProfile() {
@@ -253,8 +254,11 @@ function VendorProfile() {
         }
     }
 
-    const handleSubmit = async (e) => {
+    const profileGuard = useFormGuard(300)
+
+    const handleSubmit = (e) => {
         e.preventDefault()
+        profileGuard.run(async () => {
         setLoading(true)
 
         try {
@@ -344,6 +348,7 @@ function VendorProfile() {
             setNotification({ show: true, type: 'error', message: errorMessage })
             setLoading(false)
         }
+        }) // end profileGuard.run
     }
 
     const handleCancel = () => {
@@ -725,7 +730,7 @@ function VendorProfile() {
                             <button type="button" className="btn-secondary" onClick={handleCancel}>
                                 Batal
                             </button>
-                            <button type="submit" className="btn-primary" disabled={loading}>
+                            <button type="submit" className="btn-primary" disabled={loading || profileGuard.isSubmitting}>
                                 {loading ? (
                                     <>
                                         <span className="loading-spinner"></span>

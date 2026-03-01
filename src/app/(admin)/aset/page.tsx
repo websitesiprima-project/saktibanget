@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect, Fragment } from 'react'
+import { useFormGuard } from '@/hooks/useFormGuard'
 import { useSearchParams } from 'next/navigation'
 import { Eye, Edit, Trash2, Search, ChevronDown, ChevronUp, Plus, Save, Upload, Calendar, Clock, ArrowRight, FileText, AlertCircle, AlertTriangle, FileCheck, History, Activity, X, CheckCircle, Info, AlertOctagon } from 'lucide-react'
 import { supabase } from '../../../lib/supabaseClient'
@@ -533,6 +534,11 @@ function ManajemenAset() {
     const [progressFileUploading, setProgressFileUploading] = useState(false)
     const [amendmentFile, setAmendmentFile] = useState<File | null>(null) // File PDF untuk amandemen
     const [amendmentFileUploading, setAmendmentFileUploading] = useState(false)
+
+    // ── Anti-spam / double-submit guards ────────────────────────────────────
+    const contractGuard = useFormGuard(300)  // main contract save
+    const progressGuard = useFormGuard(300)  // progress tracker save
+    const paymentGuard  = useFormGuard(300)  // payment stage save
     const [activeHistoryTab, setActiveHistoryTab] = useState('all') // 'all', 'amendments', 'progress'
 
     // State for Payment Stages
@@ -614,8 +620,9 @@ function ManajemenAset() {
         setShowPaymentModal(true)
     }
 
-    const handlePaymentSubmit = async (e) => {
+    const handlePaymentSubmit = (e) => {
         e.preventDefault()
+        paymentGuard.run(async () => {
         setPaymentError('')
 
         // Validasi input
@@ -663,6 +670,7 @@ function ManajemenAset() {
             const errorMessage = err?.message || (typeof err === 'string' ? err : JSON.stringify(err))
             showAlert('error', 'Gagal', errorMessage)
         }
+        }) // end paymentGuard.run
     }
 
     const handleMarkAsPaid = async (stageId, contractId) => {
@@ -752,9 +760,9 @@ function ManajemenAset() {
         setShowProgressModal(true)
     }
 
-    const handleProgressSubmit = async (e) => {
+    const handleProgressSubmit = (e) => {
         e.preventDefault()
-
+        progressGuard.run(async () => {
         try {
             const percentage = progressFormData.percentage || 0;
             console.log('Submitting Progress:', { contractId: progressFormData.contractId, percentage });
@@ -871,6 +879,7 @@ function ManajemenAset() {
             const msg = err?.message || err?.error_description || JSON.stringify(err);
             showAlert('error', 'Gagal', 'Gagal menambahkan progress tracker: ' + msg);
         }
+        }) // end progressGuard.run
     }
 
     const toggleColumnVisibility = (column) => {
@@ -953,9 +962,9 @@ function ManajemenAset() {
         })
     }
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault()
-
+        contractGuard.run(async () => {
         try {
             // Validasi: Cek duplikasi nomor kontrak/nomor surat
             if (!isEditing) {
@@ -1198,6 +1207,7 @@ function ManajemenAset() {
                 showAlert('error', 'Gagal', 'Gagal menyimpan data: ' + errorMessage)
             }
         }
+        }) // end contractGuard.run
     }
 
     // History Detail Modal State
@@ -2702,8 +2712,8 @@ function ManajemenAset() {
                                         <button type="button" className="btn-modern-cancel" onClick={handleCloseModal}>
                                             Batal
                                         </button>
-                                        <button type="submit" className="btn-modern-submit">
-                                            <Save size={18} /> {isAmendment ? 'Simpan Amandemen' : 'Simpan Kontrak'}
+                                        <button type="submit" className="btn-modern-submit" disabled={contractGuard.isSubmitting || amendmentFileUploading}>
+                                            <Save size={18} /> {contractGuard.isSubmitting ? 'Menyimpan...' : isAmendment ? 'Simpan Amandemen' : 'Simpan Kontrak'}
                                         </button>
                                     </div>
                                 </form>
@@ -2949,9 +2959,11 @@ function ManajemenAset() {
                                         <button type="button" className="btn-modern-cancel" onClick={() => { setShowProgressModal(false); setProgressFile(null); }}>
                                             Batal
                                         </button>
-                                        <button type="submit" className="btn-modern-submit" disabled={progressFileUploading}>
+                                        <button type="submit" className="btn-modern-submit" disabled={progressGuard.isSubmitting || progressFileUploading}>
                                             {progressFileUploading ? (
                                                 <>Mengupload...</>
+                                            ) : progressGuard.isSubmitting ? (
+                                                <>Menyimpan...</>
                                             ) : (
                                                 <><Save size={18} /> Simpan Progress</>
                                             )}
@@ -3112,7 +3124,9 @@ function ManajemenAset() {
                                         {paymentError && (
                                             <div style={{ color: 'red', marginBottom: 8, fontWeight: 500 }}>{paymentError}</div>
                                         )}
-                                        <button type="submit" className="btn-modern-submit" disabled={!!paymentError}>
+                                        <button type="submit" className="btn-modern-submit" disabled={paymentGuard.isSubmitting || !!paymentError}>{
+                                            paymentGuard.isSubmitting ? 'Menyimpan...' : 'Simpan Tahapan'
+                                        }</button>
                                             <Save size={18} /> Simpan Tahapan
                                         </button>
                                     </div>

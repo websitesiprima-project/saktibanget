@@ -6,6 +6,7 @@ import { uploadPDFToSupabase } from '@/services/fileUploadService'
 import { createSurat } from '@/services/suratService'
 import NotificationModal from '@/components/NotificationModal'
 import './VendorPengajuan.css'
+import { useFormGuard } from '@/hooks/useFormGuard'
 
 function VendorPengajuan() {
     const router = useRouter()
@@ -26,6 +27,7 @@ function VendorPengajuan() {
     const [isDragging, setIsDragging] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [notification, setNotification] = useState({ show: false, type: 'success' as 'success' | 'error' | 'warning' | 'info', message: '' })
+    const submitGuard = useFormGuard(300)
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
@@ -152,13 +154,14 @@ function VendorPengajuan() {
         return Object.keys(newErrors).length === 0
     }
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault()
 
         if (!validateForm()) {
             return
         }
 
+        submitGuard.run(async () => {
         setIsSubmitting(true)
 
         try {
@@ -194,6 +197,7 @@ function VendorPengajuan() {
             setNotification({ show: true, type: 'error', message: 'Terjadi kesalahan saat mengirim pengajuan' })
             setIsSubmitting(false)
         }
+        }) // end submitGuard.run
     }
 
     const isFormValid = () => {
@@ -402,7 +406,7 @@ function VendorPengajuan() {
                         <button
                             type="submit"
                             className="btn-primary"
-                            disabled={!isFormValid() || isSubmitting}
+                            disabled={!isFormValid() || isSubmitting || submitGuard.isSubmitting}
                         >
                             {isSubmitting ? (
                                 <>
