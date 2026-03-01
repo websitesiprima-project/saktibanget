@@ -24,44 +24,9 @@ const nextConfig = {
         imageSizes: [16, 32, 48, 64, 96, 128, 256],
     },
 
-    // Experimental features untuk performa
+    // Experimental features
     experimental: {
-        optimizePackageImports: ['lucide-react', 'styled-components', '@supabase/supabase-js'],
-    },
-    // Webpack optimization
-    webpack: (config, { dev, isServer }) => {
-        // Production optimizations
-        if (!dev && !isServer) {
-            config.optimization = {
-                ...config.optimization,
-                moduleIds: 'deterministic',
-                runtimeChunk: 'single',
-                splitChunks: {
-                    chunks: 'all',
-                    cacheGroups: {
-                        default: false,
-                        vendors: false,
-                        // Vendor chunk
-                        vendor: {
-                            name: 'vendor',
-                            chunks: 'all',
-                            test: /node_modules/,
-                            priority: 20,
-                        },
-                        // Common chunk
-                        common: {
-                            name: 'common',
-                            minChunks: 2,
-                            chunks: 'all',
-                            priority: 10,
-                            reuseExistingChunk: true,
-                            enforce: true,
-                        },
-                    },
-                },
-            }
-        }
-        return config
+        optimizePackageImports: ['lucide-react'],
     },
 };
 
