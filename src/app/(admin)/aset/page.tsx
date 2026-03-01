@@ -3124,10 +3124,8 @@ function ManajemenAset() {
                                         {paymentError && (
                                             <div style={{ color: 'red', marginBottom: 8, fontWeight: 500 }}>{paymentError}</div>
                                         )}
-                                        <button type="submit" className="btn-modern-submit" disabled={paymentGuard.isSubmitting || !!paymentError}>{
-                                            paymentGuard.isSubmitting ? 'Menyimpan...' : 'Simpan Tahapan'
-                                        }</button>
-                                            <Save size={18} /> Simpan Tahapan
+                                        <button type="submit" className="btn-modern-submit" disabled={paymentGuard.isSubmitting || !!paymentError}>
+                                            {paymentGuard.isSubmitting ? 'Menyimpan...' : <><Save size={18} /> Simpan Tahapan</>}
                                         </button>
                                     </div>
                                 </form>
