@@ -187,7 +187,7 @@ function VendorProfile() {
             // File disimpan PERMANEN di cloud storage
             // ========================================
             const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('vendor-profiles')
+                .from('avatars')
                 .upload(filePath, file, {
                     cacheControl: '3600',
                     upsert: true  // Allow overwrite
@@ -195,10 +195,7 @@ function VendorProfile() {
 
             if (uploadError) {
                 console.error('Upload error details:', uploadError)
-                if (uploadError.message.includes('not found')) {
-                    throw new Error('Bucket "vendor-profiles" belum dibuat di Supabase Storage. Silakan buat bucket terlebih dahulu.')
-                }
-                throw uploadError
+                throw new Error('Gagal mengupload foto: ' + uploadError.message)
             }
 
             console.log('Upload success to Supabase Storage:', uploadData)
@@ -208,7 +205,7 @@ function VendorProfile() {
             // URL ini bisa diakses dari device manapun
             // ========================================
             const { data: { publicUrl } } = supabase.storage
-                .from('vendor-profiles')
+                .from('avatars')
                 .getPublicUrl(filePath)
 
             console.log('Public URL from Supabase:', publicUrl)
