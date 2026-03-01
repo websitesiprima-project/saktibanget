@@ -61,9 +61,12 @@ function ManajemenAset() {
     // State untuk data aset (dari Supabase) - MOVED UP TO FIX REFERENCE ERROR
     const [assets, setAssets] = useState([])
 
-    // Filter assets berdasarkan search term dan status
+    // Filter assets berdasarkan search term (nama kontrak ATAU nomor kontrak) dan status
     const filteredAssets = assets.filter(asset => {
-        const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase())
+        const term = searchTerm.toLowerCase()
+        const matchesSearch = !term ||
+            (asset.name || '').toLowerCase().includes(term) ||
+            (asset.invoiceNumber || '').toLowerCase().includes(term)
         const matchesStatus = filterStatus === 'all' || asset.status === filterStatus
         return matchesSearch && matchesStatus
     })

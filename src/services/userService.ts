@@ -5,7 +5,7 @@ import { supabase, handleSupabaseError, handleSupabaseSuccess } from '../lib/sup
  * Handles user profile, password, and admin operations
  */
 
-// Upload profile image to Supabase Storage
+// Upload profile image via server-side API route (uses supabaseAdmin to bypass RLS & bucket issues)
 export const uploadProfileImage = async (userId: string, file: File) => {
     try {
         // Validasi ukuran file (max 2MB)
@@ -20,45 +20,22 @@ export const uploadProfileImage = async (userId: string, file: File) => {
             return handleSupabaseError({ message: 'Tipe file tidak didukung. Gunakan JPG, PNG, GIF, atau WebP' });
         }
 
-        // Generate unique filename
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${userId}-${Date.now()}.${fileExt}`;
-        const filePath = `profile-images/${fileName}`;
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('userId', userId);
 
-        // Upload file ke Supabase Storage bucket 'avatars'
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('avatars')
-            .upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: false
-            });
+        const res = await fetch('/api/profile/upload', {
+            method: 'POST',
+            body: formData,
+        });
 
-        if (uploadError) {
-            console.error('Upload error:', uploadError);
-            return handleSupabaseError(uploadError);
+        const result = await res.json();
+
+        if (!result.success) {
+            return handleSupabaseError({ message: result.error || 'Upload gagal' });
         }
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(filePath);
-
-        // Update profile dengan URL gambar
-        const { data, error } = await supabase
-            .from('profiles')
-            .update({
-                profile_image: publicUrl,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', userId)
-            .select();
-
-        if (error) {
-            console.error('Database update error:', error);
-            return handleSupabaseError(error);
-        }
-
-        return handleSupabaseSuccess({ url: publicUrl }, 'Foto profil berhasil diupload!');
+        return handleSupabaseSuccess({ url: result.url }, result.message || 'Foto profil berhasil diupload!');
     } catch (error) {
         console.error('Upload profile image error:', error);
         return handleSupabaseError(error);
@@ -92,57 +69,35 @@ export const deleteProfileImage = async (imageUrl: string) => {
     }
 };
 
-// Update user profile
+// Update user profile via server-side API route (uses supabaseAdmin + upsert to avoid RLS/missing row issues)
 export const updateProfile = async (userId: string, profileData: any) => {
     try {
         if (!userId || userId.trim() === '') {
             console.error('Update profile failed: Missing User ID');
             return handleSupabaseError({ message: 'User ID tidak valid (kosong). Silakan refresh halaman.' });
         }
-        // First, update email if changed (requires auth update)
-        if (profileData.email) {
-            const { error: emailError } = await supabase.auth.updateUser({
-                email: profileData.email
-            });
 
-            if (emailError) {
-                console.warn('Email update error:', emailError);
-                // Continue even if email update fails
-            }
+        const res = await fetch('/api/profile/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId,
+                namaLengkap: profileData.namaLengkap,
+                email: profileData.email,
+                telepon: profileData.telepon,
+                alamat: profileData.alamat,
+                profile_image: profileData.profile_image,
+            }),
+        });
+
+        const result = await res.json();
+
+        if (!result.success) {
+            console.error('Profile update error:', result.error);
+            return handleSupabaseError({ message: result.error || 'Gagal memperbarui profil.' });
         }
 
-        // Update profile data in profiles table
-        // Use upsert to avoid RLS policy recursion issues
-        const updateData: any = {
-            full_name: profileData.namaLengkap,
-            phone: profileData.telepon,
-            address: profileData.alamat,
-            updated_at: new Date().toISOString()
-        };
-
-        // Include profile_image if provided
-        if (profileData.profile_image !== undefined) {
-            updateData.profile_image = profileData.profile_image;
-        }
-
-        const { data, error } = await supabase
-            .from('profiles')
-            .update(updateData)
-            .eq('id', userId)
-            .select();
-
-        if (error) {
-            console.error('Profile update error details:', JSON.stringify(error, null, 2));
-            console.error('Failed to update user:', userId);
-            return handleSupabaseError(error);
-        }
-
-        if (!data || data.length === 0) {
-            console.error('Update returned 0 rows. RLS blocking or ID mismatch. UserID:', userId);
-            return handleSupabaseError({ message: 'Gagal update: Data tidak ditemukan atau akses ditolak.' });
-        }
-
-        return handleSupabaseSuccess(data[0], 'Profil berhasil diperbarui!');
+        return handleSupabaseSuccess(result.data, result.message || 'Profil berhasil diperbarui!');
     } catch (error) {
         console.error('Update profile catch error:', error);
         return handleSupabaseError(error);
