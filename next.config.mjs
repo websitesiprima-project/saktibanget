@@ -27,15 +27,6 @@ const nextConfig = {
     // Experimental features untuk performa
     experimental: {
         optimizePackageImports: ['lucide-react', 'styled-components', '@supabase/supabase-js'],
-        // Turbo mode untuk compile lebih cepat
-        turbo: {
-            rules: {
-                '*.svg': {
-                    loaders: ['@svgr/webpack'],
-                    as: '*.js',
-                },
-            },
-        },
     },
     // Webpack optimization
     webpack: (config, { dev, isServer }) => {
