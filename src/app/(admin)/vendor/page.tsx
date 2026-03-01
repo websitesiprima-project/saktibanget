@@ -161,7 +161,7 @@ function DataVendor() {
                     kategori: vendor.kategori || '',
                     bankPembayaran: vendor.bank_pembayaran || '',
                     noRekening: vendor.no_rekening || '',
-                    namaRekening: vendor.nama_rekening || ''
+                    namaRekening: vendor.nama_rekening || '',
                     // Claim code fields
                     claimCode: vendor.claim_code || null,
                     isClaimed: vendor.is_claimed || false,
