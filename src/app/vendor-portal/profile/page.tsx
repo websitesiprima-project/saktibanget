@@ -259,95 +259,95 @@ function VendorProfile() {
     const handleSubmit = (e) => {
         e.preventDefault()
         profileGuard.run(async () => {
-        setLoading(true)
+            setLoading(true)
 
-        try {
-            const vendorUserId = localStorage.getItem('vendorUserId')
-
-            if (!vendorUserId) {
-                throw new Error('User ID tidak ditemukan. Silakan login kembali.')
-            }
-
-            // Update all data in vendor_users table
-            const { data, error } = await supabase
-                .from('vendor_users')
-                .update({
-                    company_name: profileData.companyName,
-                    company_type: profileData.companyType,
-                    address: profileData.address,
-                    bank_name: profileData.bankName || null,
-                    account_number: profileData.accountNumber || null,
-                    account_name: profileData.accountName || null,
-                    pic_name: profileData.picName,
-                    pic_phone: profileData.picPhone,
-                    pic_position: profileData.picPosition || null,
-                    pic_email: profileData.picEmail || null
-                })
-                .eq('id', parseInt(vendorUserId))
-                .select()
-
-            if (error) {
-                console.error('Supabase error:', error)
-                throw new Error(error.message || 'Gagal menyimpan ke database')
-            }
-
-            console.log('Update successful:', data)
-
-            // ========================================
-            // SINKRONISASI DATA KE TABEL VENDORS
-            // Update jabatan dan kontak person di master data vendor
-            // ========================================
             try {
-                // Cari vendor berdasarkan company_name atau email
-                const { data: vendorData, error: vendorFindError } = await supabase
-                    .from('vendors')
-                    .select('id')
-                    .or(`nama.eq.${profileData.companyName},email.eq.${profileData.picEmail}`)
-                    .maybeSingle()
+                const vendorUserId = localStorage.getItem('vendorUserId')
 
-                if (vendorData && !vendorFindError) {
-                    // Update data vendor dengan info terbaru dari user
-                    const { error: vendorUpdateError } = await supabase
-                        .from('vendors')
-                        .update({
-                            nama_pimpinan: profileData.picName,
-                            // jabatan: profileData.picPosition || null, // TODO: Uncomment setelah migration dijalankan
-                            telepon: profileData.picPhone || null,
-                            email: profileData.picEmail || null,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', vendorData.id)
-
-                    if (vendorUpdateError) {
-                        console.warn('Warning: Gagal sync ke vendors table:', vendorUpdateError)
-                    } else {
-                        console.log('✅ Vendor data synced successfully')
-                    }
+                if (!vendorUserId) {
+                    throw new Error('User ID tidak ditemukan. Silakan login kembali.')
                 }
-            } catch (syncError) {
-                // Jangan throw error, cukup log warning
-                console.warn('Warning: Sync to vendors table failed:', syncError)
+
+                // Update all data in vendor_users table
+                const { data, error } = await supabase
+                    .from('vendor_users')
+                    .update({
+                        company_name: profileData.companyName,
+                        company_type: profileData.companyType,
+                        address: profileData.address,
+                        bank_name: profileData.bankName || null,
+                        account_number: profileData.accountNumber || null,
+                        account_name: profileData.accountName || null,
+                        pic_name: profileData.picName,
+                        pic_phone: profileData.picPhone,
+                        pic_position: profileData.picPosition || null,
+                        pic_email: profileData.picEmail || null
+                    })
+                    .eq('id', parseInt(vendorUserId))
+                    .select()
+
+                if (error) {
+                    console.error('Supabase error:', error)
+                    throw new Error(error.message || 'Gagal menyimpan ke database')
+                }
+
+                console.log('Update successful:', data)
+
+                // ========================================
+                // SINKRONISASI DATA KE TABEL VENDORS
+                // Update jabatan dan kontak person di master data vendor
+                // ========================================
+                try {
+                    // Cari vendor berdasarkan company_name atau email
+                    const { data: vendorData, error: vendorFindError } = await supabase
+                        .from('vendors')
+                        .select('id')
+                        .or(`nama.eq.${profileData.companyName},email.eq.${profileData.picEmail}`)
+                        .maybeSingle()
+
+                    if (vendorData && !vendorFindError) {
+                        // Update data vendor dengan info terbaru dari user
+                        const { error: vendorUpdateError } = await supabase
+                            .from('vendors')
+                            .update({
+                                nama_pimpinan: profileData.picName,
+                                // jabatan: profileData.picPosition || null, // TODO: Uncomment setelah migration dijalankan
+                                telepon: profileData.picPhone || null,
+                                email: profileData.picEmail || null,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', vendorData.id)
+
+                        if (vendorUpdateError) {
+                            console.warn('Warning: Gagal sync ke vendors table:', vendorUpdateError)
+                        } else {
+                            console.log('✅ Vendor data synced successfully')
+                        }
+                    }
+                } catch (syncError) {
+                    // Jangan throw error, cukup log warning
+                    console.warn('Warning: Sync to vendors table failed:', syncError)
+                }
+
+                // Update localStorage for header
+                localStorage.setItem('vendorProfile', JSON.stringify({
+                    userId: parseInt(vendorUserId),
+                    companyName: profileData.companyName,
+                    picName: profileData.picName,
+                    profileImage: profileImage
+                }))
+
+                // Trigger custom event to update header
+                window.dispatchEvent(new Event('profileUpdated'))
+                setLoading(false)
+                setIsEditing(false)
+                setNotification({ show: true, type: 'success', message: 'Profil perusahaan berhasil disimpan!' })
+            } catch (err) {
+                console.error('Error saving profile:', err)
+                const errorMessage = err.message || 'Gagal menyimpan profil. Silakan coba lagi.'
+                setNotification({ show: true, type: 'error', message: errorMessage })
+                setLoading(false)
             }
-
-            // Update localStorage for header
-            localStorage.setItem('vendorProfile', JSON.stringify({
-                userId: parseInt(vendorUserId),
-                companyName: profileData.companyName,
-                picName: profileData.picName,
-                profileImage: profileImage
-            }))
-
-            // Trigger custom event to update header
-            window.dispatchEvent(new Event('profileUpdated'))
-            setLoading(false)
-            setIsEditing(false)
-            setNotification({ show: true, type: 'success', message: 'Profil perusahaan berhasil disimpan!' })
-        } catch (err) {
-            console.error('Error saving profile:', err)
-            const errorMessage = err.message || 'Gagal menyimpan profil. Silakan coba lagi.'
-            setNotification({ show: true, type: 'error', message: errorMessage })
-            setLoading(false)
-        }
         }) // end profileGuard.run
     }
 

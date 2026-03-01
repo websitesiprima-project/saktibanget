@@ -538,7 +538,7 @@ function ManajemenAset() {
     // ── Anti-spam / double-submit guards ────────────────────────────────────
     const contractGuard = useFormGuard(300)  // main contract save
     const progressGuard = useFormGuard(300)  // progress tracker save
-    const paymentGuard  = useFormGuard(300)  // payment stage save
+    const paymentGuard = useFormGuard(300)  // payment stage save
     const [activeHistoryTab, setActiveHistoryTab] = useState('all') // 'all', 'amendments', 'progress'
 
     // State for Payment Stages
@@ -623,53 +623,53 @@ function ManajemenAset() {
     const handlePaymentSubmit = (e) => {
         e.preventDefault()
         paymentGuard.run(async () => {
-        setPaymentError('')
+            setPaymentError('')
 
-        // Validasi input
-        if (!paymentFormData.name || !paymentFormData.amount) {
-            setPaymentError('Nama dan nominal harus diisi!')
-            return
-        }
-
-        // Validasi: total termin tidak boleh melebihi nilai kontrak
-        const contract = assets.find(a => a.id === paymentFormData.contractId)
-        const contractAmount = contract ? Number(contract.amount) : 0
-        // Hitung total termin existing (exclude current if editing)
-        const totalTermin = paymentStages.reduce((sum, s) => sum + (Number(s.value) || 0), 0)
-        const newTotal = totalTermin + Number(paymentFormData.amount)
-        if (paymentMode === 'termin' && newTotal > contractAmount) {
-            setPaymentError('Total nominal tahapan melebihi nilai kontrak!')
-            return
-        }
-        try {
-            const payload = {
-                contract_id: paymentFormData.contractId,
-                name: paymentFormData.name,
-                percentage: String(parseFloat(paymentFormData.percentage) || 0),
-                value: String(parseFloat(paymentFormData.amount) || 0),
-                due_date: paymentFormData.dueDate || null,
-                status: 'Pending'
+            // Validasi input
+            if (!paymentFormData.name || !paymentFormData.amount) {
+                setPaymentError('Nama dan nominal harus diisi!')
+                return
             }
 
-            console.log('Submitting payment payload:', payload)
-
-            const { data, error } = await supabase.from('payment_stages').insert([payload]).select()
-
-            if (error) {
-                console.error('Supabase insert error:', error)
-                throw new Error(error.message || error.details || 'Gagal menyimpan ke database')
+            // Validasi: total termin tidak boleh melebihi nilai kontrak
+            const contract = assets.find(a => a.id === paymentFormData.contractId)
+            const contractAmount = contract ? Number(contract.amount) : 0
+            // Hitung total termin existing (exclude current if editing)
+            const totalTermin = paymentStages.reduce((sum, s) => sum + (Number(s.value) || 0), 0)
+            const newTotal = totalTermin + Number(paymentFormData.amount)
+            if (paymentMode === 'termin' && newTotal > contractAmount) {
+                setPaymentError('Total nominal tahapan melebihi nilai kontrak!')
+                return
             }
+            try {
+                const payload = {
+                    contract_id: paymentFormData.contractId,
+                    name: paymentFormData.name,
+                    percentage: String(parseFloat(paymentFormData.percentage) || 0),
+                    value: String(parseFloat(paymentFormData.amount) || 0),
+                    due_date: paymentFormData.dueDate || null,
+                    status: 'Pending'
+                }
 
-            console.log('Payment stage saved successfully:', data)
+                console.log('Submitting payment payload:', payload)
 
-            showAlert('success', 'Berhasil', 'Tahapan pembayaran berhasil ditambahkan!')
-            fetchPaymentStages(paymentFormData.contractId)
-            setShowPaymentModal(false)
-        } catch (err) {
-            console.error('Error saving payment stage:', err)
-            const errorMessage = err?.message || (typeof err === 'string' ? err : JSON.stringify(err))
-            showAlert('error', 'Gagal', errorMessage)
-        }
+                const { data, error } = await supabase.from('payment_stages').insert([payload]).select()
+
+                if (error) {
+                    console.error('Supabase insert error:', error)
+                    throw new Error(error.message || error.details || 'Gagal menyimpan ke database')
+                }
+
+                console.log('Payment stage saved successfully:', data)
+
+                showAlert('success', 'Berhasil', 'Tahapan pembayaran berhasil ditambahkan!')
+                fetchPaymentStages(paymentFormData.contractId)
+                setShowPaymentModal(false)
+            } catch (err) {
+                console.error('Error saving payment stage:', err)
+                const errorMessage = err?.message || (typeof err === 'string' ? err : JSON.stringify(err))
+                showAlert('error', 'Gagal', errorMessage)
+            }
         }) // end paymentGuard.run
     }
 
@@ -763,122 +763,122 @@ function ManajemenAset() {
     const handleProgressSubmit = (e) => {
         e.preventDefault()
         progressGuard.run(async () => {
-        try {
-            const percentage = progressFormData.percentage || 0;
-            console.log('Submitting Progress:', { contractId: progressFormData.contractId, percentage });
+            try {
+                const percentage = progressFormData.percentage || 0;
+                console.log('Submitting Progress:', { contractId: progressFormData.contractId, percentage });
 
-            // 1. Handle file upload if present (optional)
-            let fileUrl = null
-            let fileName = null
-            let googleDriveId = null
+                // 1. Handle file upload if present (optional)
+                let fileUrl = null
+                let fileName = null
+                let googleDriveId = null
 
-            if (progressFile) {
-                setProgressFileUploading(true)
-                try {
-                    // Get contract info for folder naming
-                    const contract = assets.find(a => a.id === progressFormData.contractId)
-                    const formData = new FormData()
-                    formData.append('file', progressFile)
-                    formData.append('tipeAnggaran', contract?.budgetType || 'Progress')
-                    formData.append('namaKontrak', contract?.name || 'Progress')
-                    formData.append('nomorKontrak', contract?.invoiceNumber || progressFormData.contractId)
-                    formData.append('contractId', progressFormData.contractId)
-                    formData.append('subFolder', 'Progress Tracker')
+                if (progressFile) {
+                    setProgressFileUploading(true)
+                    try {
+                        // Get contract info for folder naming
+                        const contract = assets.find(a => a.id === progressFormData.contractId)
+                        const formData = new FormData()
+                        formData.append('file', progressFile)
+                        formData.append('tipeAnggaran', contract?.budgetType || 'Progress')
+                        formData.append('namaKontrak', contract?.name || 'Progress')
+                        formData.append('nomorKontrak', contract?.invoiceNumber || progressFormData.contractId)
+                        formData.append('contractId', progressFormData.contractId)
+                        formData.append('subFolder', 'Progress Tracker')
 
-                    const uploadRes = await fetch('/api/upload-contract', {
-                        method: 'POST',
-                        body: formData
-                    })
+                        const uploadRes = await fetch('/api/upload-contract', {
+                            method: 'POST',
+                            body: formData
+                        })
 
-                    if (uploadRes.ok) {
-                        const uploadData = await uploadRes.json()
-                        fileUrl = uploadData.data?.webViewLink || null
-                        fileName = progressFile.name
-                        googleDriveId = uploadData.data?.fileId || null
-                    } else {
-                        const errData = await uploadRes.json().catch(() => ({}))
-                        const errMsg = errData?.error || `HTTP ${uploadRes.status}`
-                        console.warn('File upload failed:', errMsg)
-                        showAlert('error', 'Upload Gagal', `Dokumen tidak berhasil diupload: ${errMsg}. Progress tetap tersimpan.`)
+                        if (uploadRes.ok) {
+                            const uploadData = await uploadRes.json()
+                            fileUrl = uploadData.data?.webViewLink || null
+                            fileName = progressFile.name
+                            googleDriveId = uploadData.data?.fileId || null
+                        } else {
+                            const errData = await uploadRes.json().catch(() => ({}))
+                            const errMsg = errData?.error || `HTTP ${uploadRes.status}`
+                            console.warn('File upload failed:', errMsg)
+                            showAlert('error', 'Upload Gagal', `Dokumen tidak berhasil diupload: ${errMsg}. Progress tetap tersimpan.`)
+                        }
+                    } catch (uploadErr) {
+                        console.warn('File upload error:', uploadErr)
+                        // Continue without file - it's optional
+                    } finally {
+                        setProgressFileUploading(false)
                     }
-                } catch (uploadErr) {
-                    console.warn('File upload error:', uploadErr)
-                    // Continue without file - it's optional
-                } finally {
-                    setProgressFileUploading(false)
                 }
+
+                // 2. Build progress_date from user input
+                let progressDate = null
+                if (progressFormData.date) {
+                    const timeStr = progressFormData.time || '00:00'
+                    progressDate = `${progressFormData.date} ${timeStr}`
+                }
+
+                // 3. Add History Entry with progress_date and file info
+                const progressDateTime = progressFormData.date && progressFormData.time
+                    ? `${progressFormData.date} ${progressFormData.time}`
+                    : '';
+
+                const historyPayload = {
+                    contract_id: progressFormData.contractId,
+                    action: `Progress Tracker: ${progressFormData.title} (${percentage}%)`,
+                    user_name: 'Admin',
+                    details: `Progress: ${percentage}%. Status: ${progressFormData.status}. ${progressFormData.description || 'Tidak ada keterangan tambahan.'} ${progressDateTime ? `Tanggal: ${progressDateTime}` : ''}`,
+                    progress_date: progressDate, // Store the user-input date for calculation!
+                    file_url: fileUrl,
+                    file_name: fileName,
+                    google_drive_id: googleDriveId
+                }
+
+                console.log('Inserting history with progress_date:', progressDate)
+
+                const { error: historyError } = await supabase
+                    .from('contract_history')
+                    .insert([historyPayload])
+
+                if (historyError) {
+                    console.error('Supabase History Error:', historyError);
+                    throw historyError;
+                }
+
+                // 4. Update Contract Progress in database
+                const { error: updateError } = await supabase
+                    .from('contracts')
+                    .update({ progress: percentage })
+                    .eq('id', progressFormData.contractId)
+
+                if (updateError) {
+                    console.warn('Could not update progress column:', updateError.message);
+                    // Log but don't throw - we already saved to history which is the source of truth
+                }
+
+                showAlert('success', 'Berhasil', 'Progress tracker berhasil ditambahkan!' + (fileUrl ? ' File berhasil diupload.' : ''))
+
+                // Store the contract ID before closing modal
+                const contractId = progressFormData.contractId
+
+                // Close modal and reset form
+                setShowProgressModal(false)
+                setProgressFormData({
+                    contractId: '',
+                    title: '',
+                    description: '',
+                    status: 'In Progress',
+                    percentage: 0,
+                    date: '',
+                    time: ''
+                })
+                setProgressFile(null) // Reset file
+
+                // Refresh data to get updated history
+                await fetchContracts()
+            } catch (err) {
+                console.error('Error adding progress tracker FULL:', err);
+                const msg = err?.message || err?.error_description || JSON.stringify(err);
+                showAlert('error', 'Gagal', 'Gagal menambahkan progress tracker: ' + msg);
             }
-
-            // 2. Build progress_date from user input
-            let progressDate = null
-            if (progressFormData.date) {
-                const timeStr = progressFormData.time || '00:00'
-                progressDate = `${progressFormData.date} ${timeStr}`
-            }
-
-            // 3. Add History Entry with progress_date and file info
-            const progressDateTime = progressFormData.date && progressFormData.time
-                ? `${progressFormData.date} ${progressFormData.time}`
-                : '';
-
-            const historyPayload = {
-                contract_id: progressFormData.contractId,
-                action: `Progress Tracker: ${progressFormData.title} (${percentage}%)`,
-                user_name: 'Admin',
-                details: `Progress: ${percentage}%. Status: ${progressFormData.status}. ${progressFormData.description || 'Tidak ada keterangan tambahan.'} ${progressDateTime ? `Tanggal: ${progressDateTime}` : ''}`,
-                progress_date: progressDate, // Store the user-input date for calculation!
-                file_url: fileUrl,
-                file_name: fileName,
-                google_drive_id: googleDriveId
-            }
-
-            console.log('Inserting history with progress_date:', progressDate)
-
-            const { error: historyError } = await supabase
-                .from('contract_history')
-                .insert([historyPayload])
-
-            if (historyError) {
-                console.error('Supabase History Error:', historyError);
-                throw historyError;
-            }
-
-            // 4. Update Contract Progress in database
-            const { error: updateError } = await supabase
-                .from('contracts')
-                .update({ progress: percentage })
-                .eq('id', progressFormData.contractId)
-
-            if (updateError) {
-                console.warn('Could not update progress column:', updateError.message);
-                // Log but don't throw - we already saved to history which is the source of truth
-            }
-
-            showAlert('success', 'Berhasil', 'Progress tracker berhasil ditambahkan!' + (fileUrl ? ' File berhasil diupload.' : ''))
-
-            // Store the contract ID before closing modal
-            const contractId = progressFormData.contractId
-
-            // Close modal and reset form
-            setShowProgressModal(false)
-            setProgressFormData({
-                contractId: '',
-                title: '',
-                description: '',
-                status: 'In Progress',
-                percentage: 0,
-                date: '',
-                time: ''
-            })
-            setProgressFile(null) // Reset file
-
-            // Refresh data to get updated history
-            await fetchContracts()
-        } catch (err) {
-            console.error('Error adding progress tracker FULL:', err);
-            const msg = err?.message || err?.error_description || JSON.stringify(err);
-            showAlert('error', 'Gagal', 'Gagal menambahkan progress tracker: ' + msg);
-        }
         }) // end progressGuard.run
     }
 
@@ -965,59 +965,187 @@ function ManajemenAset() {
     const handleSubmit = (e) => {
         e.preventDefault()
         contractGuard.run(async () => {
-        try {
-            // Validasi: Cek duplikasi nomor kontrak/nomor surat
-            if (!isEditing) {
-                // Untuk tambah baru, cek apakah nomor kontrak sudah ada
-                // Nomor kontrak disimpan di field nomor_surat
-                const contractNumber = formData.invoiceNumber || formData.id
-                if (contractNumber) {
-                    const { data: existingContracts, error: checkError } = await supabase
-                        .from('contracts')
-                        .select('id, nomor_surat, name')
-                        .eq('nomor_surat', contractNumber)
+            try {
+                // Validasi: Cek duplikasi nomor kontrak/nomor surat
+                if (!isEditing) {
+                    // Untuk tambah baru, cek apakah nomor kontrak sudah ada
+                    // Nomor kontrak disimpan di field nomor_surat
+                    const contractNumber = formData.invoiceNumber || formData.id
+                    if (contractNumber) {
+                        const { data: existingContracts, error: checkError } = await supabase
+                            .from('contracts')
+                            .select('id, nomor_surat, name')
+                            .eq('nomor_surat', contractNumber)
 
-                    if (checkError) {
-                        console.warn('Error checking duplicate:', checkError)
-                    }
+                        if (checkError) {
+                            console.warn('Error checking duplicate:', checkError)
+                        }
 
-                    if (existingContracts && existingContracts.length > 0) {
-                        const existing = existingContracts[0]
-                        showAlert(
-                            'error',
-                            'Nomor Kontrak Sudah Ada',
-                            `Nomor kontrak "${contractNumber}" sudah terdaftar dalam sistem untuk kontrak "${existing.name}". Silakan gunakan nomor kontrak yang berbeda.`
-                        )
-                        return
-                    }
-                }
-            }
-
-            if (isEditing) {
-                // Get old data once for both vendor sync and history log
-                const oldData = assets.find(a => a.id === editId)
-
-                // 1. Auto-sync vendor jika vendor berubah
-                let vendorCreated = false;
-                if (formData.vendorName && formData.vendorName.trim() !== '' &&
-                    oldData && oldData.vendorName !== formData.vendorName) {
-                    const syncResult = await autoSyncVendor(formData.vendorName);
-                    if (syncResult.success) {
-                        console.log('Vendor sync on update:', syncResult.message);
-                        if ((syncResult as any).data && !(syncResult as any).data.exists) {
-                            vendorCreated = true;
-                            console.log('✅ Vendor baru dibuat saat edit:', formData.vendorName);
+                        if (existingContracts && existingContracts.length > 0) {
+                            const existing = existingContracts[0]
+                            showAlert(
+                                'error',
+                                'Nomor Kontrak Sudah Ada',
+                                `Nomor kontrak "${contractNumber}" sudah terdaftar dalam sistem untuk kontrak "${existing.name}". Silakan gunakan nomor kontrak yang berbeda.`
+                            )
+                            return
                         }
                     }
                 }
 
-                // 2. Update Contracts Table
-                const { error: updateError } = await supabase
-                    .from('contracts')
-                    .update({
+                if (isEditing) {
+                    // Get old data once for both vendor sync and history log
+                    const oldData = assets.find(a => a.id === editId)
+
+                    // 1. Auto-sync vendor jika vendor berubah
+                    let vendorCreated = false;
+                    if (formData.vendorName && formData.vendorName.trim() !== '' &&
+                        oldData && oldData.vendorName !== formData.vendorName) {
+                        const syncResult = await autoSyncVendor(formData.vendorName);
+                        if (syncResult.success) {
+                            console.log('Vendor sync on update:', syncResult.message);
+                            if ((syncResult as any).data && !(syncResult as any).data.exists) {
+                                vendorCreated = true;
+                                console.log('✅ Vendor baru dibuat saat edit:', formData.vendorName);
+                            }
+                        }
+                    }
+
+                    // 2. Update Contracts Table
+                    const { error: updateError } = await supabase
+                        .from('contracts')
+                        .update({
+                            name: formData.name,
+                            nomor_surat: formData.invoiceNumber || '',
+                            perihal: formData.name || '',
+                            start_date: formData.startDate,
+                            end_date: formData.endDate,
+                            pengirim: formData.vendorName || '',
+                            penerima: formData.recipient || '',
+                            recipient: formData.recipient || '',
+                            invoice_number: formData.invoiceNumber || '',
+                            amount: formData.amount ? parseFloat(formData.amount) : 0,
+                            budget_type: formData.budgetType || '',
+                            contract_type: formData.contractType || '',
+                            status: formData.status,
+                            kategori: formData.category || '-',
+                            location: formData.location || '',
+                            vendor_name: formData.vendorName || '',
+                            notes: formData.location || '',
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', editId)
+
+                    if (updateError) throw updateError
+
+                    // 3. Insert History Log (skip if table doesn't exist)
+                    let changeDetails = []
+
+                    if (oldData) {
+                        if (oldData.name !== formData.name) changeDetails.push(`Nama Kontrak: "${oldData.name}" ➝ "${formData.name}"`)
+                        if (oldData.vendorName !== formData.vendorName) changeDetails.push(`Vendor: "${oldData.vendorName}" ➝ "${formData.vendorName}"`)
+
+                        const oldAmount = Number(oldData.amount || 0)
+                        const newAmount = Number(formData.amount || 0)
+                        if (oldAmount !== newAmount) {
+                            changeDetails.push(`Nilai: ${formatCurrency(oldAmount)} ➝ ${formatCurrency(newAmount)}`)
+                        }
+
+                        if (oldData.status !== formData.status) changeDetails.push(`Status: "${oldData.status}" ➝ "${formData.status}"`)
+                        if (oldData.startDate !== formData.startDate) changeDetails.push(`Tgl Mulai: ${oldData.startDate} ➝ ${formData.startDate}`)
+                        if (oldData.endDate !== formData.endDate) changeDetails.push(`Tgl Selesai: ${oldData.endDate} ➝ ${formData.endDate}`)
+                        if (oldData.location !== formData.location) changeDetails.push(`Lokasi: "${oldData.location}" ➝ "${formData.location}"`)
+                    }
+
+                    const actionTitle = isAmendment
+                        ? `Amandemen Kontrak ${formData.amendmentDocNumber ? `(No. ${formData.amendmentDocNumber})` : ''}`
+                        : (changeDetails.length > 0 ? 'Update Data' : 'Update Data (Tanpa Perubahan)')
+
+                    let actionDetails = ''
+                    if (isAmendment) {
+                        const changes = changeDetails.length > 0 ? ` Perubahan: ${changeDetails.join(', ')}` : ''
+                        actionDetails = `${formData.amendmentDescription ? `Ket: ${formData.amendmentDescription}.` : ''}${changes}` || 'Amandemen tercatat.'
+                    } else {
+                        actionDetails = changeDetails.length > 0
+                            ? `Perubahan: ${changeDetails.join(', ')}`
+                            : `Update data kontrak ${editId} tanpa perubahan signifikan`
+                    }
+
+                    try {
+                        // === Upload file amandemen ke Google Drive jika ada ===
+                        let amendmentFileUrl: string | null = null
+                        let amendmentFileName: string | null = null
+                        if (isAmendment && amendmentFile) {
+                            setAmendmentFileUploading(true)
+                            try {
+                                const contract = assets.find(a => a.id === editId)
+                                const amdFormData = new FormData()
+                                amdFormData.append('file', amendmentFile)
+                                amdFormData.append('tipeAnggaran', contract?.budgetType || 'Amandemen')
+                                amdFormData.append('namaKontrak', contract?.name || formData.name || 'Kontrak')
+                                amdFormData.append('nomorKontrak', contract?.invoiceNumber || editId)
+                                amdFormData.append('contractId', editId)
+                                amdFormData.append('subFolder', 'Amandemen')
+                                const uploadRes = await fetch('/api/upload-contract', { method: 'POST', body: amdFormData })
+                                if (uploadRes.ok) {
+                                    const uploadData = await uploadRes.json()
+                                    amendmentFileUrl = uploadData.data?.webViewLink || null
+                                    amendmentFileName = amendmentFile.name
+                                } else {
+                                    const errData = await uploadRes.json().catch(() => ({}))
+                                    const errMsg = errData?.error || `HTTP ${uploadRes.status}`
+                                    console.warn('Amendment file upload failed:', errMsg)
+                                    showAlert('error', 'Upload Gagal', `Dokumen amandemen tidak berhasil diupload: ${errMsg}. Amandemen tetap tersimpan.`)
+                                }
+                            } catch (uploadErr) {
+                                console.warn('Amendment upload error:', uploadErr)
+                            } finally {
+                                setAmendmentFileUploading(false)
+                            }
+                        }
+
+                        await supabase.from('contract_history').insert([{
+                            contract_id: editId,
+                            action: actionTitle,
+                            user_name: 'Admin',
+                            details: actionDetails,
+                            file_url: amendmentFileUrl,
+                            file_name: amendmentFileName,
+                        }])
+                    } catch (historyError) {
+                        console.warn('History table not available:', historyError)
+                    }
+
+                    const updateMessage = vendorCreated
+                        ? `Kontrak berhasil diperbarui! Vendor "${formData.vendorName}" juga telah ditambahkan ke Data Vendor.`
+                        : 'Kontrak berhasil diperbarui!';
+
+                    // Update vendor status based on contracts
+                    await updateVendorContractStatus()
+
+                    showAlert('success', 'Berhasil', updateMessage)
+                } else {
+                    // 1. Auto-sync vendor (create jika belum ada)
+                    let vendorCreated = false;
+                    if (formData.vendorName && formData.vendorName.trim() !== '') {
+                        const syncResult = await autoSyncVendor(formData.vendorName);
+                        if (syncResult.success) {
+                            console.log('Vendor sync:', syncResult.message);
+                            if (syncResult.data && !syncResult.data.exists) {
+                                vendorCreated = true;
+                                console.log('✅ Vendor baru dibuat:', formData.vendorName);
+                            }
+                        } else {
+                            console.warn('Vendor sync warning:', (syncResult as any).error || 'Unknown error');
+                        }
+                    }
+
+                    // 2. Insert New Contract
+                    const payload = {
                         name: formData.name,
-                        nomor_surat: formData.invoiceNumber || '',
+                        nomor_surat: formData.invoiceNumber || formData.id || '',
                         perihal: formData.name || '',
+                        tanggal_masuk: formData.startDate || new Date().toISOString().split('T')[0],
                         start_date: formData.startDate,
                         end_date: formData.endDate,
                         pengirim: formData.vendorName || '',
@@ -1031,182 +1159,54 @@ function ManajemenAset() {
                         kategori: formData.category || '-',
                         location: formData.location || '',
                         vendor_name: formData.vendorName || '',
-                        notes: formData.location || '',
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', editId)
-
-                if (updateError) throw updateError
-
-                // 3. Insert History Log (skip if table doesn't exist)
-                let changeDetails = []
-
-                if (oldData) {
-                    if (oldData.name !== formData.name) changeDetails.push(`Nama Kontrak: "${oldData.name}" ➝ "${formData.name}"`)
-                    if (oldData.vendorName !== formData.vendorName) changeDetails.push(`Vendor: "${oldData.vendorName}" ➝ "${formData.vendorName}"`)
-
-                    const oldAmount = Number(oldData.amount || 0)
-                    const newAmount = Number(formData.amount || 0)
-                    if (oldAmount !== newAmount) {
-                        changeDetails.push(`Nilai: ${formatCurrency(oldAmount)} ➝ ${formatCurrency(newAmount)}`)
+                        notes: formData.location || ''
                     }
 
-                    if (oldData.status !== formData.status) changeDetails.push(`Status: "${oldData.status}" ➝ "${formData.status}"`)
-                    if (oldData.startDate !== formData.startDate) changeDetails.push(`Tgl Mulai: ${oldData.startDate} ➝ ${formData.startDate}`)
-                    if (oldData.endDate !== formData.endDate) changeDetails.push(`Tgl Selesai: ${oldData.endDate} ➝ ${formData.endDate}`)
-                    if (oldData.location !== formData.location) changeDetails.push(`Lokasi: "${oldData.location}" ➝ "${formData.location}"`)
+                    const { error: insertError } = await supabase
+                        .from('contracts')
+                        .insert([payload])
+
+                    if (insertError) throw insertError
+
+                    // 2. Insert Initial History (skip if table doesn't exist)
+                    try {
+                        await supabase.from('contract_history').insert([{
+                            contract_id: formData.id,
+                            action: 'Kontrak Dibuat',
+                            user_name: 'Admin',
+                            details: 'Kontrak baru ditambahkan ke sistem'
+                        }])
+                    } catch (historyError) {
+                        console.warn('History table not available:', historyError)
+                    }
+
+                    const successMessage = vendorCreated
+                        ? `Kontrak berhasil ditambahkan! Vendor "${formData.vendorName}" juga telah ditambahkan ke Data Vendor.`
+                        : 'Kontrak berhasil ditambahkan!';
+
+                    // Update vendor status based on contracts
+                    await updateVendorContractStatus()
+
+                    showAlert('success', 'Berhasil', successMessage)
                 }
 
-                const actionTitle = isAmendment
-                    ? `Amandemen Kontrak ${formData.amendmentDocNumber ? `(No. ${formData.amendmentDocNumber})` : ''}`
-                    : (changeDetails.length > 0 ? 'Update Data' : 'Update Data (Tanpa Perubahan)')
+                // Refresh data
+                fetchContracts()
+                handleCloseModal()
 
-                let actionDetails = ''
-                if (isAmendment) {
-                    const changes = changeDetails.length > 0 ? ` Perubahan: ${changeDetails.join(', ')}` : ''
-                    actionDetails = `${formData.amendmentDescription ? `Ket: ${formData.amendmentDescription}.` : ''}${changes}` || 'Amandemen tercatat.'
+            } catch (err) {
+                console.error('Error saving contract:', err)
+                console.error('Error details:', JSON.stringify(err, null, 2))
+
+                const errorMessage = err.message || err.error_description || 'Terjadi kesalahan yang tidak diketahui.'
+
+                // Handle duplicate key error
+                if (errorMessage.includes('duplicate key') || err.code === '23505') {
+                    showAlert('error', 'Nomor Kontrak Sudah Ada', `Nomor kontrak "${formData.id}" sudah terdaftar dalam sistem. Silakan gunakan nomor kontrak yang berbeda.`)
                 } else {
-                    actionDetails = changeDetails.length > 0
-                        ? `Perubahan: ${changeDetails.join(', ')}`
-                        : `Update data kontrak ${editId} tanpa perubahan signifikan`
+                    showAlert('error', 'Gagal', 'Gagal menyimpan data: ' + errorMessage)
                 }
-
-                try {
-                    // === Upload file amandemen ke Google Drive jika ada ===
-                    let amendmentFileUrl: string | null = null
-                    let amendmentFileName: string | null = null
-                    if (isAmendment && amendmentFile) {
-                        setAmendmentFileUploading(true)
-                        try {
-                            const contract = assets.find(a => a.id === editId)
-                            const amdFormData = new FormData()
-                            amdFormData.append('file', amendmentFile)
-                            amdFormData.append('tipeAnggaran', contract?.budgetType || 'Amandemen')
-                            amdFormData.append('namaKontrak', contract?.name || formData.name || 'Kontrak')
-                            amdFormData.append('nomorKontrak', contract?.invoiceNumber || editId)
-                            amdFormData.append('contractId', editId)
-                            amdFormData.append('subFolder', 'Amandemen')
-                            const uploadRes = await fetch('/api/upload-contract', { method: 'POST', body: amdFormData })
-                            if (uploadRes.ok) {
-                                const uploadData = await uploadRes.json()
-                                amendmentFileUrl = uploadData.data?.webViewLink || null
-                                amendmentFileName = amendmentFile.name
-                            } else {
-                                const errData = await uploadRes.json().catch(() => ({}))
-                                const errMsg = errData?.error || `HTTP ${uploadRes.status}`
-                                console.warn('Amendment file upload failed:', errMsg)
-                                showAlert('error', 'Upload Gagal', `Dokumen amandemen tidak berhasil diupload: ${errMsg}. Amandemen tetap tersimpan.`)
-                            }
-                        } catch (uploadErr) {
-                            console.warn('Amendment upload error:', uploadErr)
-                        } finally {
-                            setAmendmentFileUploading(false)
-                        }
-                    }
-
-                    await supabase.from('contract_history').insert([{
-                        contract_id: editId,
-                        action: actionTitle,
-                        user_name: 'Admin',
-                        details: actionDetails,
-                        file_url: amendmentFileUrl,
-                        file_name: amendmentFileName,
-                    }])
-                } catch (historyError) {
-                    console.warn('History table not available:', historyError)
-                }
-
-                const updateMessage = vendorCreated
-                    ? `Kontrak berhasil diperbarui! Vendor "${formData.vendorName}" juga telah ditambahkan ke Data Vendor.`
-                    : 'Kontrak berhasil diperbarui!';
-
-                // Update vendor status based on contracts
-                await updateVendorContractStatus()
-
-                showAlert('success', 'Berhasil', updateMessage)
-            } else {
-                // 1. Auto-sync vendor (create jika belum ada)
-                let vendorCreated = false;
-                if (formData.vendorName && formData.vendorName.trim() !== '') {
-                    const syncResult = await autoSyncVendor(formData.vendorName);
-                    if (syncResult.success) {
-                        console.log('Vendor sync:', syncResult.message);
-                        if (syncResult.data && !syncResult.data.exists) {
-                            vendorCreated = true;
-                            console.log('✅ Vendor baru dibuat:', formData.vendorName);
-                        }
-                    } else {
-                        console.warn('Vendor sync warning:', (syncResult as any).error || 'Unknown error');
-                    }
-                }
-
-                // 2. Insert New Contract
-                const payload = {
-                    name: formData.name,
-                    nomor_surat: formData.invoiceNumber || formData.id || '',
-                    perihal: formData.name || '',
-                    tanggal_masuk: formData.startDate || new Date().toISOString().split('T')[0],
-                    start_date: formData.startDate,
-                    end_date: formData.endDate,
-                    pengirim: formData.vendorName || '',
-                    penerima: formData.recipient || '',
-                    recipient: formData.recipient || '',
-                    invoice_number: formData.invoiceNumber || '',
-                    amount: formData.amount ? parseFloat(formData.amount) : 0,
-                    budget_type: formData.budgetType || '',
-                    contract_type: formData.contractType || '',
-                    status: formData.status,
-                    kategori: formData.category || '-',
-                    location: formData.location || '',
-                    vendor_name: formData.vendorName || '',
-                    notes: formData.location || ''
-                }
-
-                const { error: insertError } = await supabase
-                    .from('contracts')
-                    .insert([payload])
-
-                if (insertError) throw insertError
-
-                // 2. Insert Initial History (skip if table doesn't exist)
-                try {
-                    await supabase.from('contract_history').insert([{
-                        contract_id: formData.id,
-                        action: 'Kontrak Dibuat',
-                        user_name: 'Admin',
-                        details: 'Kontrak baru ditambahkan ke sistem'
-                    }])
-                } catch (historyError) {
-                    console.warn('History table not available:', historyError)
-                }
-
-                const successMessage = vendorCreated
-                    ? `Kontrak berhasil ditambahkan! Vendor "${formData.vendorName}" juga telah ditambahkan ke Data Vendor.`
-                    : 'Kontrak berhasil ditambahkan!';
-
-                // Update vendor status based on contracts
-                await updateVendorContractStatus()
-
-                showAlert('success', 'Berhasil', successMessage)
             }
-
-            // Refresh data
-            fetchContracts()
-            handleCloseModal()
-
-        } catch (err) {
-            console.error('Error saving contract:', err)
-            console.error('Error details:', JSON.stringify(err, null, 2))
-
-            const errorMessage = err.message || err.error_description || 'Terjadi kesalahan yang tidak diketahui.'
-
-            // Handle duplicate key error
-            if (errorMessage.includes('duplicate key') || err.code === '23505') {
-                showAlert('error', 'Nomor Kontrak Sudah Ada', `Nomor kontrak "${formData.id}" sudah terdaftar dalam sistem. Silakan gunakan nomor kontrak yang berbeda.`)
-            } else {
-                showAlert('error', 'Gagal', 'Gagal menyimpan data: ' + errorMessage)
-            }
-        }
         }) // end contractGuard.run
     }
 
@@ -3058,7 +3058,11 @@ function ManajemenAset() {
                                                     className="input-modern"
                                                     value={paymentFormData.percentage}
                                                     onChange={(e) => {
-                                                        const pct = parseFloat(e.target.value) || 0;
+                                                        let pct = parseFloat(e.target.value) || 0;
+                                                        // Cap percentage at 100 for termin mode
+                                                        if (paymentMode === 'termin') {
+                                                            pct = Math.min(pct, 100);
+                                                        }
                                                         // Calculate nominal automatically
                                                         const contract = assets.find(a => a.id === paymentFormData.contractId);
                                                         const contractAmount = contract ? Number(contract.amount) : 0;
@@ -3070,7 +3074,9 @@ function ManajemenAset() {
                                                             amount: calculatedAmount.toString()
                                                         })
                                                     }}
-                                                    title="Masukkan persentase pembayaran"
+                                                    min="0"
+                                                    max={paymentMode === 'termin' ? '100' : undefined}
+                                                    title="Masukkan persentase pembayaran (maksimal 100%)"
                                                     disabled={paymentMode === 'single'}
                                                 />
                                             </div>

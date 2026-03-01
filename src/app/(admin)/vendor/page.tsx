@@ -244,332 +244,332 @@ function DataVendor() {
     const handleSubmit = (e) => {
         e.preventDefault()
         vendorGuard.run(async () => {
-        setLoading(true)
+            setLoading(true)
 
-        try {
-            // Get admin name from localStorage
-            const adminName = localStorage.getItem('userName') || localStorage.getItem('userEmail') || 'Admin PLN'
+            try {
+                // Get admin name from localStorage
+                const adminName = localStorage.getItem('userName') || localStorage.getItem('userEmail') || 'Admin PLN'
 
-            if (isEditing) {
-                // Update existing vendor di tabel vendors
-                const payload = {
-                    nama: formData.nama,
-                    alamat: formData.alamat,
-                    telepon: formData.telepon || null,
-                    email: formData.email || null,
-                    nama_pimpinan: formData.namaPimpinan || null,
-                    // jabatan: formData.jabatan || null, // TODO: Uncomment setelah migration dijalankan
-                    npwp: formData.npwp || null,
-                    status: formData.status,
-                    updated_at: new Date().toISOString()
-                }
-
-                const { error } = await supabase
-                    .from('vendors')
-                    .update(payload)
-                    .eq('id', editId)
-
-                if (error) throw error
-
-                // ========================================
-                // SINKRONISASI KE VENDOR_USERS
-                // Update profil vendor user jika ada perubahan
-                // ========================================
-                try {
-                    // Cari vendor_user berdasarkan company_name atau email
-                    // Gunakan filter yang lebih aman
-                    let vendorUser = null
-                    let vendorUserFindError = null
-
-                    // Coba cari berdasarkan email dulu
-                    if (formData.email) {
-                        const { data, error } = await supabase
-                            .from('vendor_users')
-                            .select('id')
-                            .eq('email', formData.email)
-                            .maybeSingle()
-                        vendorUser = data
-                        vendorUserFindError = error
+                if (isEditing) {
+                    // Update existing vendor di tabel vendors
+                    const payload = {
+                        nama: formData.nama,
+                        alamat: formData.alamat,
+                        telepon: formData.telepon || null,
+                        email: formData.email || null,
+                        nama_pimpinan: formData.namaPimpinan || null,
+                        // jabatan: formData.jabatan || null, // TODO: Uncomment setelah migration dijalankan
+                        npwp: formData.npwp || null,
+                        status: formData.status,
+                        updated_at: new Date().toISOString()
                     }
 
-                    // Jika tidak ditemukan, coba cari berdasarkan pic_email
-                    if (!vendorUser && formData.email) {
-                        const { data, error } = await supabase
-                            .from('vendor_users')
-                            .select('id')
-                            .eq('pic_email', formData.email)
-                            .maybeSingle()
-                        vendorUser = data
-                        vendorUserFindError = error
-                    }
-
-                    // Jika tidak ditemukan, coba cari berdasarkan company_name
-                    if (!vendorUser && formData.nama) {
-                        const { data, error } = await supabase
-                            .from('vendor_users')
-                            .select('id')
-                            .eq('company_name', formData.nama)
-                            .maybeSingle()
-                        vendorUser = data
-                        vendorUserFindError = error
-                    }
-
-                    console.log('🔍 Found vendor_user:', vendorUser)
-
-                    if (vendorUser && !vendorUserFindError) {
-                        // Update data vendor_users dengan info terbaru dari admin
-                        const { error: vendorUserUpdateError } = await supabase
-                            .from('vendor_users')
-                            .update({
-                                company_name: formData.nama || null,
-                                pic_name: formData.namaPimpinan || null,
-                                // pic_position: formData.jabatan || null, // TODO: Uncomment setelah migration
-                                pic_phone: formData.telepon || null,
-                                pic_email: formData.email || null,
-                                address: formData.alamat || null,
-                                bank_name: formData.bankPembayaran || null,
-                                account_number: formData.noRekening || null,
-                                account_name: formData.namaRekening || null
-                            })
-                            .eq('id', vendorUser.id)
-
-                        if (vendorUserUpdateError) {
-                            console.warn('Warning: Gagal sync ke vendor_users table:', vendorUserUpdateError)
-                        } else {
-                            console.log('✅ Vendor user data synced successfully')
-                        }
-                    } else {
-                        console.log('ℹ️ No vendor_user found to sync')
-                    }
-                } catch (syncError) {
-                    // Jangan throw error, cukup log warning
-                    console.warn('Warning: Sync to vendor_users table failed:', syncError)
-                }
-
-                // Auto-update status based on contracts after save
-                await updateVendorContractStatus()
-
-                // Refresh data vendor untuk update detail
-                await fetchVendors()
-
-                // Trigger event untuk update profil vendor (jika sedang dibuka)
-                window.dispatchEvent(new Event('vendorDataUpdated'))
-
-                setNotification({ show: true, type: 'success', message: 'Vendor berhasil diperbarui!' })
-                setShowModal(false)
-            } else {
-                // ========================================
-                // VALIDASI DUPLIKASI EMAIL DAN NAMA VENDOR
-                // ========================================
-
-                // 1. Validasi duplikasi nama vendor
-                if (formData.nama && formData.nama.trim() !== '') {
-                    const { data: existingVendorByName, error: checkNameError } = await supabase
+                    const { error } = await supabase
                         .from('vendors')
-                        .select('id, nama, email')
-                        .eq('nama', formData.nama.trim())
-                        .maybeSingle()
+                        .update(payload)
+                        .eq('id', editId)
 
-                    if (checkNameError) {
-                        console.error('Error checking vendor name:', checkNameError)
-                        throw new Error('Gagal memeriksa duplikasi nama vendor')
-                    }
+                    if (error) throw error
 
-                    if (existingVendorByName) {
-                        setLoading(false)
-                        setNotification({
-                            show: true,
-                            type: 'error',
-                            message: `Vendor dengan nama "${formData.nama}" sudah terdaftar dalam sistem. Gunakan nama lain atau periksa data vendor yang sudah ada.`
-                        })
-                        return // Stop proses insert
-                    }
-                }
-
-                // 2. Validasi duplikasi email
-                if (formData.email && formData.email.trim() !== '') {
-                    const { data: existingVendorByEmail, error: checkEmailError } = await supabase
-                        .from('vendors')
-                        .select('id, nama, email')
-                        .eq('email', formData.email.trim())
-                        .maybeSingle()
-
-                    if (checkEmailError) {
-                        console.error('Error checking email:', checkEmailError)
-                        throw new Error('Gagal memeriksa duplikasi email')
-                    }
-
-                    if (existingVendorByEmail) {
-                        setLoading(false)
-                        setNotification({
-                            show: true,
-                            type: 'error',
-                            message: `Email ${formData.email} sudah terdaftar untuk vendor "${existingVendorByEmail.nama}". Gunakan email lain.`
-                        })
-                        return // Stop proses insert
-                    }
-                }
-
-                // Generate 6-digit claim code untuk vendor baru
-                const claimCode = generateClaimCode()
-
-                // Generate unique ID (VND + timestamp)
-                const vendorId = `VND${Date.now()}`
-
-                // Insert ke tabel vendors (master data perusahaan)
-                const payload = {
-                    id: vendorId,
-                    nama: formData.nama,
-                    alamat: formData.alamat,
-                    telepon: formData.telepon || null,
-                    email: formData.email || null, // Email opsional
-                    nama_pimpinan: formData.namaPimpinan || null,
-                    // jabatan: formData.jabatan || null, // TODO: Uncomment setelah migration dijalankan
-                    npwp: formData.npwp || null,
-                    status: 'Aktif',
-                    claim_code: claimCode,
-                    is_claimed: false,
-                    created_by: adminName,
-                    created_at: new Date().toISOString()
-                }
-
-                const { data: insertedVendor, error } = await supabase
-                    .from('vendors')
-                    .insert([payload])
-                    .select()
-                    .single()
-
-                if (error) throw error
-
-                // Jika email diisi, buat vendor_users dan kirim email undangan
-                let emailSentSuccessfully = false
-                if (formData.email && formData.email.trim() !== '') {
+                    // ========================================
+                    // SINKRONISASI KE VENDOR_USERS
+                    // Update profil vendor user jika ada perubahan
+                    // ========================================
                     try {
-                        // Generate activation token
-                        const activationToken = generateActivationToken()
-                        const tokenExpires = new Date()
-                        tokenExpires.setDate(tokenExpires.getDate() + 7) // 7 hari
+                        // Cari vendor_user berdasarkan company_name atau email
+                        // Gunakan filter yang lebih aman
+                        let vendorUser = null
+                        let vendorUserFindError = null
 
-                        console.log('🔐 Generated activation token:', {
-                            tokenLength: activationToken.length,
-                            tokenPreview: activationToken.substring(0, 10) + '...',
-                            expires: tokenExpires.toISOString(),
-                            email: formData.email
-                        })
+                        // Coba cari berdasarkan email dulu
+                        if (formData.email) {
+                            const { data, error } = await supabase
+                                .from('vendor_users')
+                                .select('id')
+                                .eq('email', formData.email)
+                                .maybeSingle()
+                            vendorUser = data
+                            vendorUserFindError = error
+                        }
 
-                        // Cek apakah vendor_users sudah ada dengan email ini
-                        const { data: existingVendorUser } = await supabase
-                            .from('vendor_users')
-                            .select('id')
-                            .eq('email', formData.email)
-                            .maybeSingle()
+                        // Jika tidak ditemukan, coba cari berdasarkan pic_email
+                        if (!vendorUser && formData.email) {
+                            const { data, error } = await supabase
+                                .from('vendor_users')
+                                .select('id')
+                                .eq('pic_email', formData.email)
+                                .maybeSingle()
+                            vendorUser = data
+                            vendorUserFindError = error
+                        }
 
-                        if (existingVendorUser) {
-                            console.log('📝 Updating existing vendor_user:', existingVendorUser.id)
-                            // Update existing vendor_users dengan token baru
-                            const { error: updateError } = await supabase
+                        // Jika tidak ditemukan, coba cari berdasarkan company_name
+                        if (!vendorUser && formData.nama) {
+                            const { data, error } = await supabase
+                                .from('vendor_users')
+                                .select('id')
+                                .eq('company_name', formData.nama)
+                                .maybeSingle()
+                            vendorUser = data
+                            vendorUserFindError = error
+                        }
+
+                        console.log('🔍 Found vendor_user:', vendorUser)
+
+                        if (vendorUser && !vendorUserFindError) {
+                            // Update data vendor_users dengan info terbaru dari admin
+                            const { error: vendorUserUpdateError } = await supabase
                                 .from('vendor_users')
                                 .update({
-                                    company_name: formData.nama,
+                                    company_name: formData.nama || null,
                                     pic_name: formData.namaPimpinan || null,
+                                    // pic_position: formData.jabatan || null, // TODO: Uncomment setelah migration
                                     pic_phone: formData.telepon || null,
-                                    pic_email: formData.email,
+                                    pic_email: formData.email || null,
                                     address: formData.alamat || null,
-                                    activation_token: activationToken,
-                                    activation_token_expires: tokenExpires.toISOString(),
-                                    invited_by: adminName,
-                                    is_activated: false,
-                                    status: 'Menunggu Aktivasi'
+                                    bank_name: formData.bankPembayaran || null,
+                                    account_number: formData.noRekening || null,
+                                    account_name: formData.namaRekening || null
                                 })
-                                .eq('id', existingVendorUser.id)
+                                .eq('id', vendorUser.id)
 
-                            if (updateError) {
-                                console.error('❌ Error updating vendor_user:', updateError)
-                                throw updateError
+                            if (vendorUserUpdateError) {
+                                console.warn('Warning: Gagal sync ke vendor_users table:', vendorUserUpdateError)
+                            } else {
+                                console.log('✅ Vendor user data synced successfully')
                             }
-                            console.log('✅ Vendor_user updated successfully')
                         } else {
-                            console.log('➕ Creating new vendor_user')
-                            // Create new vendor_users
-                            // TEMPORARY: Using placeholder password until database migration is run
-                            const tempPassword = 'TEMP_PENDING_ACTIVATION_' + Date.now()
+                            console.log('ℹ️ No vendor_user found to sync')
+                        }
+                    } catch (syncError) {
+                        // Jangan throw error, cukup log warning
+                        console.warn('Warning: Sync to vendor_users table failed:', syncError)
+                    }
 
-                            const { error: insertError } = await supabase
-                                .from('vendor_users')
-                                .insert([{
-                                    email: formData.email,
-                                    password: tempPassword, // Temporary - will be replaced during activation
-                                    company_name: formData.nama,
-                                    pic_name: formData.namaPimpinan || null,
-                                    pic_phone: formData.telepon || null,
-                                    pic_email: formData.email,
-                                    address: formData.alamat || null,
-                                    activation_token: activationToken,
-                                    activation_token_expires: tokenExpires.toISOString(),
-                                    invited_by: adminName,
-                                    is_activated: false,
-                                    status: 'Menunggu Aktivasi'
-                                }])
+                    // Auto-update status based on contracts after save
+                    await updateVendorContractStatus()
 
-                            if (insertError) {
-                                console.error('❌ Error creating vendor_user:', insertError)
-                                throw insertError
-                            }
-                            console.log('✅ Vendor_user created successfully')
+                    // Refresh data vendor untuk update detail
+                    await fetchVendors()
+
+                    // Trigger event untuk update profil vendor (jika sedang dibuka)
+                    window.dispatchEvent(new Event('vendorDataUpdated'))
+
+                    setNotification({ show: true, type: 'success', message: 'Vendor berhasil diperbarui!' })
+                    setShowModal(false)
+                } else {
+                    // ========================================
+                    // VALIDASI DUPLIKASI EMAIL DAN NAMA VENDOR
+                    // ========================================
+
+                    // 1. Validasi duplikasi nama vendor
+                    if (formData.nama && formData.nama.trim() !== '') {
+                        const { data: existingVendorByName, error: checkNameError } = await supabase
+                            .from('vendors')
+                            .select('id, nama, email')
+                            .eq('nama', formData.nama.trim())
+                            .maybeSingle()
+
+                        if (checkNameError) {
+                            console.error('Error checking vendor name:', checkNameError)
+                            throw new Error('Gagal memeriksa duplikasi nama vendor')
                         }
 
-                        // Kirim email undangan
-                        const emailResponse = await fetch('/api/send-invitation-email', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                email: formData.email,
-                                companyName: formData.nama,
-                                activationToken: activationToken,
-                                invitedBy: adminName
+                        if (existingVendorByName) {
+                            setLoading(false)
+                            setNotification({
+                                show: true,
+                                type: 'error',
+                                message: `Vendor dengan nama "${formData.nama}" sudah terdaftar dalam sistem. Gunakan nama lain atau periksa data vendor yang sudah ada.`
                             })
-                        })
-
-                        const emailResult = await emailResponse.json()
-                        if (emailResult.success) {
-                            emailSentSuccessfully = true
-                            console.log('✅ Email undangan berhasil dikirim ke:', formData.email)
-                        } else {
-                            console.error('❌ Gagal mengirim email undangan:', emailResult.error)
+                            return // Stop proses insert
                         }
-                    } catch (emailError) {
-                        console.error('❌ Error saat mengirim email undangan:', emailError)
+                    }
+
+                    // 2. Validasi duplikasi email
+                    if (formData.email && formData.email.trim() !== '') {
+                        const { data: existingVendorByEmail, error: checkEmailError } = await supabase
+                            .from('vendors')
+                            .select('id, nama, email')
+                            .eq('email', formData.email.trim())
+                            .maybeSingle()
+
+                        if (checkEmailError) {
+                            console.error('Error checking email:', checkEmailError)
+                            throw new Error('Gagal memeriksa duplikasi email')
+                        }
+
+                        if (existingVendorByEmail) {
+                            setLoading(false)
+                            setNotification({
+                                show: true,
+                                type: 'error',
+                                message: `Email ${formData.email} sudah terdaftar untuk vendor "${existingVendorByEmail.nama}". Gunakan email lain.`
+                            })
+                            return // Stop proses insert
+                        }
+                    }
+
+                    // Generate 6-digit claim code untuk vendor baru
+                    const claimCode = generateClaimCode()
+
+                    // Generate unique ID (VND + timestamp)
+                    const vendorId = `VND${Date.now()}`
+
+                    // Insert ke tabel vendors (master data perusahaan)
+                    const payload = {
+                        id: vendorId,
+                        nama: formData.nama,
+                        alamat: formData.alamat,
+                        telepon: formData.telepon || null,
+                        email: formData.email || null, // Email opsional
+                        nama_pimpinan: formData.namaPimpinan || null,
+                        // jabatan: formData.jabatan || null, // TODO: Uncomment setelah migration dijalankan
+                        npwp: formData.npwp || null,
+                        status: 'Aktif',
+                        claim_code: claimCode,
+                        is_claimed: false,
+                        created_by: adminName,
+                        created_at: new Date().toISOString()
+                    }
+
+                    const { data: insertedVendor, error } = await supabase
+                        .from('vendors')
+                        .insert([payload])
+                        .select()
+                        .single()
+
+                    if (error) throw error
+
+                    // Jika email diisi, buat vendor_users dan kirim email undangan
+                    let emailSentSuccessfully = false
+                    if (formData.email && formData.email.trim() !== '') {
+                        try {
+                            // Generate activation token
+                            const activationToken = generateActivationToken()
+                            const tokenExpires = new Date()
+                            tokenExpires.setDate(tokenExpires.getDate() + 7) // 7 hari
+
+                            console.log('🔐 Generated activation token:', {
+                                tokenLength: activationToken.length,
+                                tokenPreview: activationToken.substring(0, 10) + '...',
+                                expires: tokenExpires.toISOString(),
+                                email: formData.email
+                            })
+
+                            // Cek apakah vendor_users sudah ada dengan email ini
+                            const { data: existingVendorUser } = await supabase
+                                .from('vendor_users')
+                                .select('id')
+                                .eq('email', formData.email)
+                                .maybeSingle()
+
+                            if (existingVendorUser) {
+                                console.log('📝 Updating existing vendor_user:', existingVendorUser.id)
+                                // Update existing vendor_users dengan token baru
+                                const { error: updateError } = await supabase
+                                    .from('vendor_users')
+                                    .update({
+                                        company_name: formData.nama,
+                                        pic_name: formData.namaPimpinan || null,
+                                        pic_phone: formData.telepon || null,
+                                        pic_email: formData.email,
+                                        address: formData.alamat || null,
+                                        activation_token: activationToken,
+                                        activation_token_expires: tokenExpires.toISOString(),
+                                        invited_by: adminName,
+                                        is_activated: false,
+                                        status: 'Menunggu Aktivasi'
+                                    })
+                                    .eq('id', existingVendorUser.id)
+
+                                if (updateError) {
+                                    console.error('❌ Error updating vendor_user:', updateError)
+                                    throw updateError
+                                }
+                                console.log('✅ Vendor_user updated successfully')
+                            } else {
+                                console.log('➕ Creating new vendor_user')
+                                // Create new vendor_users
+                                // TEMPORARY: Using placeholder password until database migration is run
+                                const tempPassword = 'TEMP_PENDING_ACTIVATION_' + Date.now()
+
+                                const { error: insertError } = await supabase
+                                    .from('vendor_users')
+                                    .insert([{
+                                        email: formData.email,
+                                        password: tempPassword, // Temporary - will be replaced during activation
+                                        company_name: formData.nama,
+                                        pic_name: formData.namaPimpinan || null,
+                                        pic_phone: formData.telepon || null,
+                                        pic_email: formData.email,
+                                        address: formData.alamat || null,
+                                        activation_token: activationToken,
+                                        activation_token_expires: tokenExpires.toISOString(),
+                                        invited_by: adminName,
+                                        is_activated: false,
+                                        status: 'Menunggu Aktivasi'
+                                    }])
+
+                                if (insertError) {
+                                    console.error('❌ Error creating vendor_user:', insertError)
+                                    throw insertError
+                                }
+                                console.log('✅ Vendor_user created successfully')
+                            }
+
+                            // Kirim email undangan
+                            const emailResponse = await fetch('/api/send-invitation-email', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    email: formData.email,
+                                    companyName: formData.nama,
+                                    activationToken: activationToken,
+                                    invitedBy: adminName
+                                })
+                            })
+
+                            const emailResult = await emailResponse.json()
+                            if (emailResult.success) {
+                                emailSentSuccessfully = true
+                                console.log('✅ Email undangan berhasil dikirim ke:', formData.email)
+                            } else {
+                                console.error('❌ Gagal mengirim email undangan:', emailResult.error)
+                            }
+                        } catch (emailError) {
+                            console.error('❌ Error saat mengirim email undangan:', emailError)
+                        }
+                    }
+
+                    // Refresh data vendor
+                    await fetchVendors()
+
+                    // Tampilkan modal dengan kode aktivasi
+                    setNewVendorName(formData.nama)
+                    setNewVendorClaimCode(claimCode)
+                    setShowModal(false)
+                    setShowClaimCodeModal(true)
+
+                    // Jika email berhasil dikirim, tambahkan notifikasi sukses
+                    if (emailSentSuccessfully) {
+                        setTimeout(() => {
+                            setNotification({
+                                show: true,
+                                type: 'success',
+                                message: `Email undangan berhasil dikirim ke ${formData.email}`
+                            })
+                        }, 2000)
                     }
                 }
 
-                // Refresh data vendor
-                await fetchVendors()
-
-                // Tampilkan modal dengan kode aktivasi
-                setNewVendorName(formData.nama)
-                setNewVendorClaimCode(claimCode)
-                setShowModal(false)
-                setShowClaimCodeModal(true)
-
-                // Jika email berhasil dikirim, tambahkan notifikasi sukses
-                if (emailSentSuccessfully) {
-                    setTimeout(() => {
-                        setNotification({
-                            show: true,
-                            type: 'success',
-                            message: `Email undangan berhasil dikirim ke ${formData.email}`
-                        })
-                    }, 2000)
-                }
+                resetForm()
+            } catch (err) {
+                console.error('Error saving vendor:', err)
+                setNotification({ show: true, type: 'error', message: 'Gagal menyimpan vendor: ' + err.message })
+            } finally {
+                setLoading(false)
             }
-
-            resetForm()
-        } catch (err) {
-            console.error('Error saving vendor:', err)
-            setNotification({ show: true, type: 'error', message: 'Gagal menyimpan vendor: ' + err.message })
-        } finally {
-            setLoading(false)
-        }
         }) // end vendorGuard.run
     }
 
@@ -696,7 +696,7 @@ function DataVendor() {
                             .from('vendor_users')
                             .update({
                                 company_name: vendor.nama,
-pic_name: vendor.namaPimpinan || null,
+                                pic_name: vendor.namaPimpinan || null,
                                 pic_phone: vendor.telepon || null,
                                 pic_email: vendor.email,
                                 address: vendor.alamat || null,

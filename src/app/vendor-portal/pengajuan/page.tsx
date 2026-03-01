@@ -162,41 +162,41 @@ function VendorPengajuan() {
         }
 
         submitGuard.run(async () => {
-        setIsSubmitting(true)
+            setIsSubmitting(true)
 
-        try {
-            // Upload file ke Supabase Storage
-            const uploadResult = await uploadPDFToSupabase(selectedFile)
+            try {
+                // Upload file ke Supabase Storage
+                const uploadResult = await uploadPDFToSupabase(selectedFile)
 
-            if (!uploadResult.success) {
-                setNotification({ show: true, type: 'error', message: 'Gagal mengupload file: ' + uploadResult.error })
+                if (!uploadResult.success) {
+                    setNotification({ show: true, type: 'error', message: 'Gagal mengupload file: ' + uploadResult.error })
+                    setIsSubmitting(false)
+                    return
+                }
+
+                // Save to Supabase
+                const submissionData = {
+                    ...formData,
+                    fileName: selectedFile.name,
+                    fileUrl: uploadResult.fileUrl
+                }
+
+                const result = await createSurat(submissionData)
+
+                if (result.success) {
+                    setIsSubmitting(false)
+                    setNotification({ show: true, type: 'success', message: 'Surat berhasil diajukan! File telah tersimpan di server.' })
+                    setTimeout(() => {
+                        router.push('/vendor-portal')
+                    }, 2000)
+                } else {
+                    throw new Error((result as any).error || 'Gagal menyimpan data surat')
+                }
+            } catch (error) {
+                console.error('Submission error:', error)
+                setNotification({ show: true, type: 'error', message: 'Terjadi kesalahan saat mengirim pengajuan' })
                 setIsSubmitting(false)
-                return
             }
-
-            // Save to Supabase
-            const submissionData = {
-                ...formData,
-                fileName: selectedFile.name,
-                fileUrl: uploadResult.fileUrl
-            }
-
-            const result = await createSurat(submissionData)
-
-            if (result.success) {
-                setIsSubmitting(false)
-                setNotification({ show: true, type: 'success', message: 'Surat berhasil diajukan! File telah tersimpan di server.' })
-                setTimeout(() => {
-                    router.push('/vendor-portal')
-                }, 2000)
-            } else {
-                throw new Error((result as any).error || 'Gagal menyimpan data surat')
-            }
-        } catch (error) {
-            console.error('Submission error:', error)
-            setNotification({ show: true, type: 'error', message: 'Terjadi kesalahan saat mengirim pengajuan' })
-            setIsSubmitting(false)
-        }
         }) // end submitGuard.run
     }
 
