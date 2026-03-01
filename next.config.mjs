@@ -23,15 +23,9 @@ const nextConfig = {
         deviceSizes: [640, 750, 828, 1080, 1200, 1920],
         imageSizes: [16, 32, 48, 64, 96, 128, 256],
     },
-    // Modular imports untuk tree-shaking lebih agresif
-    modularizeImports: {
-        'lucide-react': {
-            transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
-        },
-    },
+
     // Experimental features untuk performa
     experimental: {
-        optimizeCss: true,
         optimizePackageImports: ['lucide-react', 'styled-components', '@supabase/supabase-js'],
         // Turbo mode untuk compile lebih cepat
         turbo: {
