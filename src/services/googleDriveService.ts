@@ -208,7 +208,7 @@ export async function getOrCreateFolder(
  * Struktur: Berkas Kontrak > [AI/AO] > [Nama Kontrak]
  */
 export async function setupContractFolderStructure(
-    tipeAnggaran: 'AI' | 'AO',
+    tipeAnggaran: string,
     namaKontrak: string
 ): Promise<string> {
     try {
@@ -368,7 +368,7 @@ export async function uploadFileToDrive(
 export async function uploadContractPDF(
     file: Buffer,
     fileName: string,
-    tipeAnggaran: 'AI' | 'AO',
+    tipeAnggaran: string,
     namaKontrak: string
 ): Promise<{ fileId: string; webViewLink: string; folderPath: string }> {
     try {

@@ -781,11 +781,12 @@ function ManajemenAset() {
 
                     if (uploadRes.ok) {
                         const uploadData = await uploadRes.json()
-                        fileUrl = uploadData.fileUrl || uploadData.webViewLink
+                        fileUrl = uploadData.data?.webViewLink || null
                         fileName = progressFile.name
-                        googleDriveId = uploadData.fileId
+                        googleDriveId = uploadData.data?.fileId || null
                     } else {
-                        console.warn('File upload failed, continuing without file')
+                        const errData = await uploadRes.json().catch(() => ({}))
+                        console.warn('File upload failed:', errData?.error || uploadRes.status)
                     }
                 } catch (uploadErr) {
                     console.warn('File upload error:', uploadErr)

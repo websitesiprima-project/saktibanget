@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (!tipeAnggaran || (tipeAnggaran !== 'AI' && tipeAnggaran !== 'AO')) {
+        if (!tipeAnggaran) {
             return NextResponse.json(
-                { success: false, error: 'Tipe anggaran harus AI atau AO' },
+                { success: false, error: 'Tipe anggaran tidak boleh kosong' },
                 { status: 400 }
             );
         }
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         const uploadResult = await uploadContractPDF(
             buffer,
             fileName,
-            tipeAnggaran as 'AI' | 'AO',
+            tipeAnggaran,
             namaKontrak
         );
 
