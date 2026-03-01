@@ -209,7 +209,8 @@ export async function getOrCreateFolder(
  */
 export async function setupContractFolderStructure(
     tipeAnggaran: string,
-    namaKontrak: string
+    namaKontrak: string,
+    subFolder?: string
 ): Promise<string> {
     try {
         // 1. Gunakan folder root yang sudah di-share (tidak perlu cari/buat baru)
@@ -223,6 +224,13 @@ export async function setupContractFolderStructure(
         // 3. Cari/buat folder nama kontrak
         const contractFolderId = await getOrCreateFolder(namaKontrak, budgetFolderId);
         console.log(`Contract folder (${namaKontrak}) ID: ${contractFolderId}`);
+
+        // 4. Opsional: cari/buat sub-folder (misal: Progress Tracker / Amandemen)
+        if (subFolder) {
+            const subFolderId = await getOrCreateFolder(subFolder, contractFolderId);
+            console.log(`Sub folder (${subFolder}) ID: ${subFolderId}`);
+            return subFolderId;
+        }
 
         return contractFolderId;
     } catch (error: any) {
@@ -369,21 +377,25 @@ export async function uploadContractPDF(
     file: Buffer,
     fileName: string,
     tipeAnggaran: string,
-    namaKontrak: string
+    namaKontrak: string,
+    subFolder?: string,
+    mimeType: string = 'application/pdf'
 ): Promise<{ fileId: string; webViewLink: string; folderPath: string }> {
     try {
-        // Setup struktur folder: Berkas Kontrak > AI/AO > Nama Kontrak
-        const contractFolderId = await setupContractFolderStructure(tipeAnggaran, namaKontrak);
+        // Setup struktur folder: Berkas Kontrak > [tipeAnggaran] > [namaKontrak] > [subFolder?]
+        const targetFolderId = await setupContractFolderStructure(tipeAnggaran, namaKontrak, subFolder);
 
         // Upload file ke folder yang sesuai
         const uploadResult = await uploadFileToDrive(
             file,
             fileName,
-            'application/pdf',
-            contractFolderId
+            mimeType,
+            targetFolderId
         );
 
-        const folderPath = `Berkas Kontrak/${tipeAnggaran}/${namaKontrak}`;
+        const folderPath = subFolder
+            ? `Berkas Kontrak/${tipeAnggaran}/${namaKontrak}/${subFolder}`
+            : `Berkas Kontrak/${tipeAnggaran}/${namaKontrak}`;
 
         return {
             ...uploadResult,

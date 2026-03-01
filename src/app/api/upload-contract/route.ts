@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
         const namaKontrak = formData.get('namaKontrak') as string;
         const nomorKontrak = formData.get('nomorKontrak') as string;
         const contractId = formData.get('contractId') as string;
+        const subFolder = (formData.get('subFolder') as string) || undefined;
 
         // Validasi input
         if (!file) {
@@ -44,10 +45,23 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validasi file type (hanya PDF)
-        if (file.type !== 'application/pdf') {
+        // Validasi file type — izinkan PDF, Word, Excel, gambar, dan ZIP
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'image/jpeg',
+            'image/png',
+            'image/jpg',
+            'application/zip',
+            'application/x-zip-compressed',
+        ];
+        // Jika tipe tidak dikenali (empty string terjadi di beberapa browser), lanjutkan saja
+        if (file.type && !allowedTypes.includes(file.type)) {
             return NextResponse.json(
-                { success: false, error: 'Hanya file PDF yang diperbolehkan' },
+                { success: false, error: `Tipe file tidak diizinkan: ${file.type}. Gunakan PDF, Word, Excel, atau gambar.` },
                 { status: 400 }
             );
         }
@@ -64,6 +78,7 @@ export async function POST(request: NextRequest) {
         console.log('Upload request received:', {
             fileName: file.name,
             fileSize: file.size,
+            fileType: file.type,
             tipeAnggaran,
             namaKontrak,
             nomorKontrak,
@@ -74,18 +89,21 @@ export async function POST(request: NextRequest) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        // Generate nama file yang unik
-        // Format: [NomorKontrak]_[timestamp].pdf
+        // Generate nama file unik, pertahankan ekstensi asli
         const timestamp = Date.now();
+        const originalExt = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : 'pdf';
         const sanitizedNomorKontrak = nomorKontrak?.replace(/[^a-zA-Z0-9-_]/g, '_') || 'kontrak';
-        const fileName = `${sanitizedNomorKontrak}_${timestamp}.pdf`;
+        const fileName = `${sanitizedNomorKontrak}_${timestamp}.${originalExt}`;
+        const mimeType = file.type || 'application/octet-stream';
 
         // Upload ke Google Drive
         const uploadResult = await uploadContractPDF(
             buffer,
             fileName,
             tipeAnggaran,
-            namaKontrak
+            namaKontrak,
+            subFolder,
+            mimeType
         );
 
         console.log('Upload successful:', uploadResult);

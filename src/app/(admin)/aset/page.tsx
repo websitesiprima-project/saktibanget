@@ -106,9 +106,9 @@ function ManajemenAset() {
                 throw new Error('Data kontrak tidak ditemukan')
             }
 
-            // Validasi tipe anggaran
-            if (!contract.budgetType || (contract.budgetType !== 'AI' && contract.budgetType !== 'AO')) {
-                throw new Error(`Tipe anggaran harus AI atau AO. Saat ini: "${contract.budgetType}". Harap update data kontrak terlebih dahulu.`)
+            // Validasi tipe anggaran (wajib diisi, nilai apapun diterima)
+            if (!contract.budgetType) {
+                throw new Error('Tipe anggaran kontrak belum diisi. Harap edit data kontrak terlebih dahulu.')
             }
 
             // Validasi nama kontrak
@@ -531,6 +531,8 @@ function ManajemenAset() {
     })
     const [progressFile, setProgressFile] = useState(null) // File PDF untuk progress tracker
     const [progressFileUploading, setProgressFileUploading] = useState(false)
+    const [amendmentFile, setAmendmentFile] = useState<File | null>(null) // File PDF untuk amandemen
+    const [amendmentFileUploading, setAmendmentFileUploading] = useState(false)
     const [activeHistoryTab, setActiveHistoryTab] = useState('all') // 'all', 'amendments', 'progress'
 
     // State for Payment Stages
@@ -773,6 +775,7 @@ function ManajemenAset() {
                     formData.append('namaKontrak', contract?.name || 'Progress')
                     formData.append('nomorKontrak', contract?.invoiceNumber || progressFormData.contractId)
                     formData.append('contractId', progressFormData.contractId)
+                    formData.append('subFolder', 'Progress Tracker')
 
                     const uploadRes = await fetch('/api/upload-contract', {
                         method: 'POST',
@@ -786,7 +789,9 @@ function ManajemenAset() {
                         googleDriveId = uploadData.data?.fileId || null
                     } else {
                         const errData = await uploadRes.json().catch(() => ({}))
-                        console.warn('File upload failed:', errData?.error || uploadRes.status)
+                        const errMsg = errData?.error || `HTTP ${uploadRes.status}`
+                        console.warn('File upload failed:', errMsg)
+                        showAlert('error', 'Upload Gagal', `Dokumen tidak berhasil diupload: ${errMsg}. Progress tetap tersimpan.`)
                     }
                 } catch (uploadErr) {
                     console.warn('File upload error:', uploadErr)
@@ -928,6 +933,7 @@ function ManajemenAset() {
         setIsEditing(false)
         setEditId(null)
         setIsAmendment(false)
+        setAmendmentFile(null)
         setFormData({
             id: '',
             name: '',
@@ -1057,11 +1063,45 @@ function ManajemenAset() {
                 }
 
                 try {
+                    // === Upload file amandemen ke Google Drive jika ada ===
+                    let amendmentFileUrl: string | null = null
+                    let amendmentFileName: string | null = null
+                    if (isAmendment && amendmentFile) {
+                        setAmendmentFileUploading(true)
+                        try {
+                            const contract = assets.find(a => a.id === editId)
+                            const amdFormData = new FormData()
+                            amdFormData.append('file', amendmentFile)
+                            amdFormData.append('tipeAnggaran', contract?.budgetType || 'Amandemen')
+                            amdFormData.append('namaKontrak', contract?.name || formData.name || 'Kontrak')
+                            amdFormData.append('nomorKontrak', contract?.invoiceNumber || editId)
+                            amdFormData.append('contractId', editId)
+                            amdFormData.append('subFolder', 'Amandemen')
+                            const uploadRes = await fetch('/api/upload-contract', { method: 'POST', body: amdFormData })
+                            if (uploadRes.ok) {
+                                const uploadData = await uploadRes.json()
+                                amendmentFileUrl = uploadData.data?.webViewLink || null
+                                amendmentFileName = amendmentFile.name
+                            } else {
+                                const errData = await uploadRes.json().catch(() => ({}))
+                                const errMsg = errData?.error || `HTTP ${uploadRes.status}`
+                                console.warn('Amendment file upload failed:', errMsg)
+                                showAlert('error', 'Upload Gagal', `Dokumen amandemen tidak berhasil diupload: ${errMsg}. Amandemen tetap tersimpan.`)
+                            }
+                        } catch (uploadErr) {
+                            console.warn('Amendment upload error:', uploadErr)
+                        } finally {
+                            setAmendmentFileUploading(false)
+                        }
+                    }
+
                     await supabase.from('contract_history').insert([{
                         contract_id: editId,
                         action: actionTitle,
                         user_name: 'Admin',
-                        details: actionDetails
+                        details: actionDetails,
+                        file_url: amendmentFileUrl,
+                        file_name: amendmentFileName,
                     }])
                 } catch (historyError) {
                     console.warn('History table not available:', historyError)
@@ -1943,7 +1983,7 @@ function ManajemenAset() {
                                                                                                     </div>
                                                                                                 </div>
                                                                                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: '8px' }}>
-                                                                                                    {/* Show file download button if file exists */}
+                                                                                                    {/* Show file download button ONLY if file exists */}
                                                                                                     {log.file_url ? (
                                                                                                         <a
                                                                                                             href={log.file_url}
@@ -1964,13 +2004,9 @@ function ManajemenAset() {
                                                                                                             }}
                                                                                                         >
                                                                                                             <FileText size={14} />
-                                                                                                            {log.file_name || 'Unduh File'}
-                                                                                                        </a>
-                                                                                                    ) : (
-                                                                                                        <span style={{ fontSize: '12px', padding: '6px 12px', background: '#eff6ff', color: '#2563eb', borderRadius: '20px', fontWeight: 600, border: '1px solid #dbeafe' }}>
                                                                                                             Dokumen Tersimpan
-                                                                                                        </span>
-                                                                                                    )}
+                                                                                                        </a>
+                                                                                                    ) : null}
                                                                                                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                                                                                                         <button
                                                                                                             onClick={() => handleOpenHistoryDetail(log)}
@@ -2611,6 +2647,52 @@ function ManajemenAset() {
                                                         required={isAmendment}
                                                     />
                                                 </div>
+
+                                                {/* Upload dokumen amandemen (opsional) */}
+                                                <div className="form-group" style={{ marginTop: '12px', marginBottom: '0' }}>
+                                                    <label style={{ fontSize: '13px', color: '#64748b', marginBottom: '4px', display: 'block' }}>Dokumen Amandemen (Opsional)</label>
+                                                    <div
+                                                        onClick={() => document.getElementById('amendmentFileInput')?.click()}
+                                                        style={{
+                                                            border: '2px dashed #cbd5e1', borderRadius: '8px', padding: '14px 16px',
+                                                            textAlign: 'center', cursor: 'pointer', background: amendmentFile ? '#f0fdf4' : '#f8fafc',
+                                                            borderColor: amendmentFile ? '#86efac' : '#cbd5e1', transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        {amendmentFile ? (
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                                                <FileText size={16} color="#16a34a" />
+                                                                <span style={{ fontWeight: 600, color: '#16a34a', fontSize: '13px' }}>{amendmentFile.name}</span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => { e.stopPropagation(); setAmendmentFile(null); }}
+                                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', marginLeft: '4px', padding: 0 }}
+                                                                >✕</button>
+                                                            </div>
+                                                        ) : (
+                                                            <div style={{ color: '#94a3b8', fontSize: '13px' }}>
+                                                                <Upload size={15} style={{ marginBottom: '2px' }} />
+                                                                <div>Klik untuk upload file PDF amandemen</div>
+                                                                <div style={{ fontSize: '11px', marginTop: '2px' }}>Maksimal 50MB</div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <input
+                                                        id="amendmentFileInput"
+                                                        type="file"
+                                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                                        style={{ display: 'none' }}
+                                                        onChange={(e) => {
+                                                            const f = e.target.files?.[0]
+                                                            if (f && f.size <= 50 * 1024 * 1024) {
+                                                                setAmendmentFile(f)
+                                                            } else if (f) {
+                                                                showAlert('error', 'Error', 'Ukuran file maksimal 50MB')
+                                                            }
+                                                            e.target.value = ''
+                                                        }}
+                                                    />
+                                                </div>
                                             </div>
 
                                         </div>
@@ -2630,17 +2712,17 @@ function ManajemenAset() {
                     )
                 }
 
-                {/* Modal Upload PDF */}
+                {/* Modal Upload Dokumen Kontrak */}
                 {
                     showUploadModal && (
                         <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
                             <div className="modal-upload-content" onClick={e => e.stopPropagation()}>
-                                <div className="modal-upload-title">Upload PDF Kontrak</div>
+                                <div className="modal-upload-title">Upload Dokumen Kontrak</div>
                                 <input
                                     className="modal-upload-input"
                                     type="file"
-                                    accept="application/pdf"
-                                    placeholder="Pilih file PDF"
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                    placeholder="Pilih file dokumen"
                                     onChange={e => setSelectedFile(e.target.files[0])}
                                 />
                                 <button
@@ -2839,20 +2921,20 @@ function ManajemenAset() {
                                                     <label style={{ cursor: 'pointer', display: 'block' }}>
                                                         <Upload size={32} style={{ color: '#94a3b8', marginBottom: '8px' }} />
                                                         <div style={{ color: '#64748b', marginBottom: '4px' }}>
-                                                            Klik untuk upload file PDF
+                                                            Klik untuk upload dokumen
                                                         </div>
                                                         <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                                                            Maksimal 10MB
+                                                            PDF, Word, Excel, Gambar — Maks. 50MB
                                                         </div>
                                                         <input
                                                             type="file"
-                                                            accept=".pdf"
+                                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
                                                             onChange={(e) => {
                                                                 const file = e.target.files?.[0]
-                                                                if (file && file.size <= 10 * 1024 * 1024) {
+                                                                if (file && file.size <= 50 * 1024 * 1024) {
                                                                     setProgressFile(file)
                                                                 } else if (file) {
-                                                                    showAlert('error', 'Error', 'Ukuran file maksimal 10MB')
+                                                                    showAlert('error', 'Error', 'Ukuran file maksimal 50MB')
                                                                 }
                                                             }}
                                                             style={{ display: 'none' }}
