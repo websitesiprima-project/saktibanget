@@ -491,7 +491,7 @@ const VendorHeader: FC = () => {
       const msgMap: Record<string, string> = {
         APPROVED: `Surat ${surat.nomor_surat} telah disetujui`,
         REJECTED: `Surat ${surat.nomor_surat} ditolak. Cek alasan penolakan.`,
-        PENDING:  `Pengajuan ${surat.nomor_surat} sedang diproses`,
+        PENDING: `Pengajuan ${surat.nomor_surat} sedang diproses`,
       }
       const updatedDate = new Date(surat.updated_at)
       const isUnread =
